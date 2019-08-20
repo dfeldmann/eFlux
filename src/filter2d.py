@@ -71,7 +71,7 @@ def fourier2dThZ(u, rPos, lambdaTh, lambdaZ, th, z, rect):
 
     return uFiltered.real
 
-def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect):
+def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
 #--------------------------------------------------------------------------
 # 2d Fourier space cut-off (aka sharp spectral) filter for 3d data in a cylindrical
 # co-ordinate frame work (r,th,z). Applied in Fourier space via FFT.

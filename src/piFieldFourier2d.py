@@ -5,14 +5,14 @@
 #           from a separate ascii file and subtract it from the each snapshot to
 #           obtain the fluctuating velocity field. Define filter widths and
 #           compute the inter-scale turbulent kinetic energy flux field for each
-#           individual snapshot based on a two-dimensional spatial Gauss filter
+#           individual snapshot based on a two-dimensional spatial Fourier filter
 #           operation in wall-parallel planes for each radial location. Write
 #           the resulting full 3d energy flux fields to individual HDF5 files
 #           for each snapshot.
-# Usage:    python piFieldGauss2d.py
+# Usage:    python piFieldFourier2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
-# Modified: 16th August 2019
+# Modified: 19th August 2019
 
 import sys
 import os.path
@@ -95,15 +95,15 @@ for iFile in iFiles:
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
     t1 = timeit.default_timer()
     import filter2d as f2
-    u_rF    = f2.gauss2d(u_r,       lambdaTh, lambdaZ, r, th, z)
-    u_thF   = f2.gauss2d(u_th,      lambdaTh, lambdaZ, r, th, z)
-    u_zF    = f2.gauss2d(u_z,       lambdaTh, lambdaZ, r, th, z)
-    u_rRF   = f2.gauss2d(u_r*u_r,   lambdaTh, lambdaZ, r, th, z)
-    u_rThF  = f2.gauss2d(u_r*u_th,  lambdaTh, lambdaZ, r, th, z)
-    u_rZF   = f2.gauss2d(u_r*u_z,   lambdaTh, lambdaZ, r, th, z)
-    u_thThF = f2.gauss2d(u_th*u_th, lambdaTh, lambdaZ, r, th, z)
-    u_thZF  = f2.gauss2d(u_th*u_z,  lambdaTh, lambdaZ, r, th, z)
-    u_zZF   = f2.gauss2d(u_z*u_z,   lambdaTh, lambdaZ, r, th, z)
+    u_rF    = f2.fourier2d(u_r,       lambdaTh, lambdaZ, r, th, z)
+    u_thF   = f2.fourier2d(u_th,      lambdaTh, lambdaZ, r, th, z)
+    u_zF    = f2.fourier2d(u_z,       lambdaTh, lambdaZ, r, th, z)
+    u_rRF   = f2.fourier2d(u_r*u_r,   lambdaTh, lambdaZ, r, th, z)
+    u_rThF  = f2.fourier2d(u_r*u_th,  lambdaTh, lambdaZ, r, th, z)
+    u_rZF   = f2.fourier2d(u_r*u_z,   lambdaTh, lambdaZ, r, th, z)
+    u_thThF = f2.fourier2d(u_th*u_th, lambdaTh, lambdaZ, r, th, z)
+    u_thZF  = f2.fourier2d(u_th*u_z,  lambdaTh, lambdaZ, r, th, z)
+    u_zZF   = f2.fourier2d(u_z*u_z,   lambdaTh, lambdaZ, r, th, z)
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t1), 'seconds')
 
     # compute instantaneous energy flux
@@ -115,7 +115,7 @@ for iFile in iFiles:
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t2), 'seconds')
 
     # store result as individual HDF5 file    
-    fnam = 'piFieldGauss2d_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
+    fnam = 'piFieldFourier2d_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     out = h5py.File(fnam, 'w') # open HDF5 file for writing
     fields = out.create_group("fields")
     scale  = out.create_group("scale")
