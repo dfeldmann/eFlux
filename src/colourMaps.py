@@ -6,14 +6,23 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 CBcdict={
-    'Bl':(0,0,0),
-    'Or':(.9,.6,0),
-    'SB':(.35,.7,.9),
-    'bG':(0,.6,.5),
-    'Ye':(.95,.9,.25),
-    'Bu':(0,.45,.7),
-    'Ve':(.8,.4,0),
-    'rP':(.8,.6,.7),
+    #'Bl':(0,0,0),
+    #'Or':(.9,.6,0),
+    #'SB':(.35,.7,.9),
+    #'bG':(0,.6,.5),
+    #'Ye':(.95,.9,.25),
+    #'Bu':(0,.45,.7),
+    #'Ve':(.8,.4,0),
+    #'rP':(.8,.6,.7),
+    # updated acc. to http://mkweb.bcgsc.ca/colorblind/img/colorblindness.palettes.trivial.png
+    'Bl':(0.00000, 0.00000, 0.000000), # Black            '#000000'
+    'Or':(0.90196, 0.62353, 0.000000), # Orange           '#E69F00'
+    'SB':(0.33725, 0.70588, 0.913730), # Sky Blue         '#56B4E9'
+    'bG':(0.00000, 0.61961, 0.450980), # bluish Green     '#009E73'
+    'Ye':(0.94118, 0.89412, 0.258820), # Yellow           '#F0E442'
+    'Bu':(0.00000, 0.44706, 0.698040), # Blue             '#0072B2'
+    'Ve':(0.83529, 0.36863, 0.000000), # Vermillion       '#D55E00' 
+    'rP':(0.80000, 0.47451, 0.654900), # reddish Purple   '#CC79A7'
 }
 
 # Single color gradient maps
