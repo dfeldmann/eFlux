@@ -9,7 +9,7 @@
 #SBATCH --job-name piCorrThZStreaksGauss2d             # -J name of the job/case
 #SBATCH --nodes=1                                           # -N number of nodes
 #SBATCH --ntasks=16                                     # -n number of mpi tasks
-#SBATCH --time=01:00:00                      # job wall-clock time in [hh:mm:ss]
+#SBATCH --time=24:00:00                      # job wall-clock time in [hh:mm:ss]
 ##SBATCH --error=slurm_%A_%a.err                   # no separate errout log file
 #SBATCH --export=NONE                           # start with a clean environment
 #
