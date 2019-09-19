@@ -69,10 +69,6 @@ Dt = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal displacement
 Dz = np.loadtxt(fnam)[:, 1] # 2nd column: Axial displacement
 f  = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation for u'_z and Pi
 
-# manual hack (TODO) 
-nth = 385  # azimuthal points
-nz  = 2305 # axial points
-
 # read 2d cross-correlation between eFlux and streaks for Gauss filter from ascii file
 fnam = 'piCorrThZStreaksGauss2d_pipe0002_01675000to01675000nt0001.dat'
 fnam = 'piCorrThZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
@@ -85,7 +81,12 @@ fnam = 'piCorrThZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlations from', fnam)
 b = np.loadtxt(fnam)[:, 6]
 
+# manual hack (TODO: read this from header info of piCorrThZ*.dat) 
+nth = 385  # azimuthal points
+nz  = 2305 # axial points
+
 # re-cast cross-correlation data into 2d array for plotting
+# (TODO: this is straight-forward fortran programming style and can maybe be done much more efficiently in Python...?)
 print('Re-cast data into 2d arrays for plotting')
 DeltaTh = np.zeros(nth)
 DeltaZ  = np.zeros(nz)
@@ -100,16 +101,16 @@ for i in range(nth):
   ccG[i, j] = g[i*(nz)+j]
   ccB[i, j] = b[i*(nz)+j]
 
-# find absolute maxima of extracted 2d data
-amccF = np.max(np.abs(ccF))           # Fourier max
-amccG = np.max(np.abs(ccG))           # Gauss max
-amccB = np.max(np.abs(ccB))           # Box max
-amcc  = np.max([amccF, amccG, amccB]) # all max
+# find absolute maxima of 2d data sets
+amccF = np.max(np.abs(ccF))            # Fourier max
+amccG = np.max(np.abs(ccG))            # Gauss max
+amccB = np.max(np.abs(ccB))            # Box max
+amcc  = np.max([amccF, amccG, amccB])  # all max
 print("Absolute maximum correlation value:", amcc)
-amcc  = 0.30000                       # manual max
-clm   = 0.10*amcc                     # manual contour level
+amcc  = 0.300                          # manual max
+clm   = 0.100*amcc                     # set contour level threshold
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 th1d = th1d * Re_tau
 z1d  =  z1d * Re_tau
 DeltaTh = DeltaTh * Re_tau
