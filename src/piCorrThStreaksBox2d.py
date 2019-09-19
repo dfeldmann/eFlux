@@ -15,7 +15,8 @@
 #           (representing streamwise alligned vortices) and for the energy flux,
 #           cross-correlations for all of these quantities with the energy flux.
 #           Do statistics over all axial locations and all snapshots, and write
-#           the resulting 1d correlations to a single ascii file.
+#           the resulting 1d correlations to a single ascii file. Optionally,
+#           plot the results interactively or as pdf figure file.
 # Usage:    python piCorrThStreaksBox2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
@@ -26,8 +27,11 @@ import math
 import numpy as np
 import h5py
 
+# plot mode: (0) none, (1) interactive, (2) pdf
+plot = 2
+
 # range of state files to read flow field data
-iFirst =  1675000
+iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
@@ -39,11 +43,11 @@ fpath = '../../outFiles/'
 # read grid from first HDF5 file
 fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFirst)+'.h5'
 print('Reading grid from', fnam, 'with:')
-f  = h5py.File(fnam, 'r') # open hdf5 file for read only
-r  = np.array(f['grid/r'])
-z  = np.array(f['grid/z'])
-th = np.array(f['grid/th'])
-f.close() # close hdf5 file
+f  = h5py.File(fnam, 'r')    # open hdf5 file for read only
+r  = np.array(f['grid/r'])   # radial co-ordinate
+th = np.array(f['grid/th'])  # azimuthal co-ordinate
+z  = np.array(f['grid/z'])   # axial co-ordainte
+f.close()                    # close hdf5 file
 
 # report grid size
 nr  = len(r)
@@ -258,8 +262,92 @@ for i in range(nth):
 f.close()
 print('Written 1d correlations to file', fnam)
 
+# plotting
+if plot not in [1, 2]: sys.exit() # skip everything below
+print('Creating plot (using LaTeX)...')
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['text.latex.preamble'] = [
+r"\usepackage[utf8]{inputenc}",
+r"\usepackage[T1]{fontenc}",
+r'\usepackage{lmodern, palatino, eulervm}',
+#r'\usepackage{mathptmx}',
+r"\usepackage[detect-all]{siunitx}",
+r'\usepackage{amsmath, amstext, amssymb}',
+r'\usepackage{xfrac}']
+#mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 8})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
 
+# create figure suitable for A4 format
+def mm2inch(*tupl):
+ inch = 25.4
+ if isinstance(tupl[0], tuple):
+  return tuple(i/inch for i in tupl[0])
+ else:
+   return tuple(i/inch for i in tupl)
+#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False) 
+fig = plt.figure(num=None, dpi=100) # , constrained_layout=False)
 
+# conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
+Vermillion    = '#D55E00'
+Blue          = '#0072B2'
+BluishGreen   = '#009E73'
+Orange        = '#E69F00'
+SkyBlue       = '#56B4E9'
+ReddishPurple = '#CC79A7'
+Yellow        = '#F0E442'
+Grey          = '#999999'
+Black         = '#000000'
+exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
+VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
+# convert spatial separation from outer to inner unit#s
+DeltaTh = DeltaTh * ReTau
+
+# plot azimuthal auto-correlations
+ax1 = plt.subplot2grid((1, 2), (0, 0), rowspan=1, colspan=1)
+ax1.set_xlabel(r"$\Delta\theta r^+$")
+ax1.set_ylabel(r"$C$")
+ax1.axhline(y=0.0, color=Grey)
+ax1.axvline(x=0.0, color=Grey)
+ax1.plot(DeltaTh, acUz,     color=Black,       linestyle='-', label=r"$C_{u^{\prime}_{z}u^{\prime}_{z}}$")
+ax1.plot(DeltaTh, acUzF,    color=Vermillion,  linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\overline{u^{\prime}_{z}}}$")
+ax1.plot(DeltaTh, acOmegaZ, color=Blue,        linestyle='-', label=r"$C_{\omega_{z}\omega_{z}}$")
+ax1.plot(DeltaTh, acPi,     color=BluishGreen, linestyle='-', label=r"$C_{\Pi\Pi }$")
+ax1.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+
+# plot azimuthal cross-correlation
+ax2 = plt.subplot2grid((1, 2), (0, 1), rowspan=1, colspan=1)
+ax2.set_xlabel(r"$\Delta\theta r^+$")
+ax2.axhline(y=0.0, color=Grey)
+ax2.axvline(x=0.0, color=Grey)
+ax2.plot(DeltaTh, ccUzPi,     color=Black,       linestyle='-', label=r"$C_{u^{\prime}_{z}\Pi}$")
+ax2.plot(DeltaTh, ccUzFPi,    color=Vermillion,  linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\Pi}$")
+ax2.plot(DeltaTh, ccOmegaZPi, color=Blue,        linestyle='-', label=r"$C_{\omega_{z}\Pi}$")
+ax2.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+
+# plot mode interactive or pdf
+if plot != 2:
+ plt.tight_layout()
+ plt.show()
+else:
+ fig.tight_layout()
+ fnam = str.replace(fnam, '.dat', '.pdf')
+ plt.savefig(fnam)
+ print('Written file', fnam)
+fig.clf()
 
 print('Done!')
