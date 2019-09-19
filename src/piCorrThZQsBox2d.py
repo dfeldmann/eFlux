@@ -28,7 +28,7 @@ import numpy as np
 import h5py
 
 # range of state files to read flow field data (do modify)
-iFirst =  1675000 # 570000
+iFirst =   570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
