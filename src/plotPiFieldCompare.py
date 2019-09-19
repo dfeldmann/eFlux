@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Purpose:  Read pre-computed instantaneous 3d energy flux fields from HDF5 file
-#           based on different filter kernels (Fourer, Gauss, box). Extract 2d
+#           based on different filter kernels (Fourier, Gauss, box). Extract 2d
 #           data sets in a wall-parallel plane and plot them to compare the
 #           effect of the filter kernel. Additional contour lines can be plotted
 #           on top. Output is interactive or as pfd figure file.

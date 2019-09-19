@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Purpose:  Read pre-computed 1d cross-correlations between energy flux and
 #           sweep (Q4) events. Plot azimtuhal (theta) and axial (z) correlation
-#           factors based on different filter kernels (Fourer, Gauss, box) to
+#           factors based on different filter kernels (Fourier, Gauss, box) to
 #           compare the influence of the kernel. Output is interactive and as
 #           pfd figure file.
 # Usage:    python plotPiCorr1dQ4Compare.py

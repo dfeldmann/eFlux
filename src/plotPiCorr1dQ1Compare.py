@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Purpose:  Read pre-computed 1d cross-correlations between energy flux and
 #           outward (Q3) interactions. Plot azimtuhal (theta) and axial (z)
-#           correlation factors based on different filter kernels (Fourer,
+#           correlation factors based on different filter kernels (Fourier,
 #           Gauss, box) to compare the influence of the kernel. Output is
 #           interactive and as pfd figure file.
 # Usage:    python plotPiCorr1dQ1Compare.py

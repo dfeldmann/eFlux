@@ -3,7 +3,7 @@
 #           plane for the energy flux (Pi) and the axial velocity component
 #           (u'_z) representing streamwise streaks. Correlation maps are read
 #           from several ascii files and plotted for three different filters
-#           (Fourer, Gauss, box) to compare the effect of the kernel. The 1d
+#           (Fourier, Gauss, box) to compare the effect of the kernel. The 1d
 #           correlations appear along the corresponding axes of the 2d maps.
 #           Additional contour lines can be plotted on top of the 2d maps.
 #           Output is interactive or as pfd figure file. TODO: find out how
