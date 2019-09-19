@@ -26,7 +26,7 @@ module list 2>&1                                         # report loaded modules
 
 # main call
 echo "Call python post-processing run"
-python piCorrThZStreaksGauss2d.py 
+python piCorrThZQsGauss2d.py 
 
 # end statement
 echo "Finished Python job $SLURM_JOBID on fsmcluster.zarm.uni-bremen.de"
