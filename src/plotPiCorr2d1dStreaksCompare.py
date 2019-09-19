@@ -126,24 +126,24 @@ mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.preamble'] = [
 r"\usepackage[utf8]{inputenc}",
 r"\usepackage[T1]{fontenc}",
+r'\usepackage{lmodern, palatino, eulervm}',
+#r'\usepackage{mathptmx}',
 r"\usepackage[detect-all]{siunitx}",
 r'\usepackage{amsmath, amstext, amssymb}',
-r'\usepackage{xfrac}',
-#r'\usepackage{lmodern, palatino, eulervm}',
-r'\usepackage{mathptmx}']
+r'\usepackage{xfrac}']
 #mpl.rcParams.update({'font.family': 'sans-serif'})
-mpl.rcParams.update({'font.family': 'serif'})
-mpl.rcParams.update({'font.size': 8})
-mpl.rcParams.update({'lines.linewidth': 0.75})
-mpl.rcParams.update({'axes.linewidth': 0.75})
-mpl.rcParams['xtick.major.size'] = 2
-mpl.rcParams['xtick.major.width'] = 0.75
-mpl.rcParams['xtick.minor.size'] = 1
-mpl.rcParams['xtick.minor.width'] = 0.75
-mpl.rcParams['ytick.major.size'] = 2
-mpl.rcParams['ytick.major.width'] = 0.75
-mpl.rcParams['ytick.minor.size'] = 1
-mpl.rcParams['ytick.minor.width'] = 0.75
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 8})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
 
 # create figure suitable for A4 format
 def mm2inch(*tupl):
