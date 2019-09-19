@@ -29,7 +29,7 @@ import math
 import numpy as np
 import h5py
 
-# range of state files to read flow field data
+# range of state files to read flow field data (do modify)
 iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
@@ -62,7 +62,7 @@ print('Reading mean velocity profile from', fnam)
 rM   = np.loadtxt(fnam)[:, 0] # 1st column r
 u_zM = np.loadtxt(fnam)[:, 3] # 4th column <u_z>
 
-# define filter width for each direction seperately
+# define filter width for each direction seperately (do modify)
 lambdaThp =  40   # cross-stream azimuthal direction (theta)
 lambdaZp  =  75   # streamwise axial direction (z)
 ReTau     = 180.4 # shear Reynolds number for Re=5300 acc. to Blasius
@@ -143,7 +143,7 @@ for iFile in iFiles:
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tflux), 'seconds')
 
     # extract 2d data sub-sets in a wall parallel plane
-    k = 65
+    k = 65 # (do modify)
     print("Extracting 2d data in wall-parallel plane at y+ =", (1-r[k])*ReTau)
     pi2d =  pi[k, :, :]
     ur   = u_r[k, :, :]
