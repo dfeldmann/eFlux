@@ -83,6 +83,16 @@ ccUzFPi    = np.zeros(nth) # initialise cross-correlation for u'_z filtered and 
 ccOmegaZPi = np.zeros(nth) # initialise cross-correlation for omega_z nd eFlux
 nt         = 0             # reset ensemble counter
 
+# first and second statistical moments for normalisation
+uz1     = 0
+uz2     = 0
+uzF1    = 0
+uzF2    = 0
+omegaZ1 = 0
+omegaZ2 = 0
+pi1     = 0
+pi2     = 0
+
 # reset wall-clock time
 t0 = timeit.default_timer()
 
@@ -160,12 +170,22 @@ for iFile in iFiles:
         ccUzFPi    = ccUzFPi    + c.corr1d(uzF1d,    pi1d)
         ccOmegaZPi = ccOmegaZPi + c.corr1d(omegaZ1d, pi1d)
 
+        # sum up first and second statistical moments in time and (homogeneous) theta and z direction for normalisation
+        uz1     = uz1     + np.sum(uz1d)
+        uz2     = uz2     + np.sum(uz1d**2)
+        uzF1    = uzF1    + np.sum(uzF1d)
+        uzF2    = uzF2    + np.sum(uzF1d**2)
+        omegaZ1 = omegaZ1 + np.sum(omegaZ1d)
+        omegaZ2 = omegaZ2 + np.sum(omegaZ1d**2)
+        pi1     = pi1     + np.sum(pi1d)
+        pi2     = pi2     + np.sum(pi1d**2)
+
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tcorr), 'seconds')
 
     # increase temporal/ensemble counter
     nt = nt + 1
 
-# divide by total number of spatio-temporal samples
+# divide correlation statistics by total number of spatio-temporal samples
 acUz       = acUz       / (nt*nz)
 acUzF      = acUzF      / (nt*nz)
 acOmegaZ   = acOmegaZ   / (nt*nz)
@@ -173,6 +193,34 @@ acPi       = acPi       / (nt*nz)
 ccUzPi     = ccUzPi     / (nt*nz)
 ccUzFPi    = ccUzFPi    / (nt*nz)
 ccOmegaZPi = ccOmegaZPi / (nt*nz)
+
+# divide normalisation statistics by total number of spatio-temporal samples
+uz1     = uz1     / (nth*nz*nt)
+uz2     = uz2     / (nth*nz*nt)
+uzF1    = uzF1    / (nth*nz*nt)
+uzF2    = uzF2    / (nth*nz*nt)
+omegaZ1 = omegaZ1 / (nth*nz*nt)
+omegaZ2 = omegaZ2 / (nth*nz*nt)
+pi1     = pi1     / (nth*nz*nt)
+pi2     = pi2     / (nth*nz*nt)
+
+# compute RMS for normalisation
+uzRms      = np.sqrt(uz2 - uz1**2)
+uzFRms     = np.sqrt(uzF2 - uzF1**2)
+omegaZRms  = np.sqrt(omegaZ2 - omegaZ1**2)
+piRms      = np.sqrt(pi2 - pi1**2)
+#print('uzMean', uz1)
+#print('uzRms', uzRms)
+
+# normalise correlations with local RMS 
+acUz       = acUz       / (uzRms     * uzRms)
+acUzF      = acUzF      / (uzFRms    * uzFRms)
+acOmegaZ   = acOmegaZ   / (omegaZRms * omegaZRms)
+acPi       = acPi       / (piRms     * piRms)
+ccUzPi     = ccUzPi     / (uzRms     * piRms)
+ccUzFPi    = ccUzFPi    / (uzFRms    * piRms)
+ccOmegaZPi = ccOmegaZPi / (omegaZRms * piRms)
+
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
 # compute centered azimuthal separation/displacement (for nice plotting only)
@@ -209,5 +257,9 @@ for i in range(nth):
   f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
+
+
+
+
 
 print('Done!')

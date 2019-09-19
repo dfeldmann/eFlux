@@ -21,6 +21,8 @@ def corr1d(a, b):
     na = np.linalg.norm(a)              # L2 norm (RMS) of first data series
     nb = np.linalg.norm(b)              # L2 norm (RMS) of second data series
     n  = na * nb                        # for normalisation
+    n  = 1.0                            # for normalisation
+    n  = len(a)                         # normalise with length of data series
 
     af = np.fft.fft(a)                  # 1d FFT of first data series
     bf = np.fft.fft(b)                  # 1d FFT of second data series
