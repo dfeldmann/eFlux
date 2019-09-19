@@ -22,8 +22,6 @@
 # Date:     28th March 2019
 # Modified: 19th September 2019
 
-#import sys
-#import os.path
 import timeit
 import math
 import numpy as np
@@ -42,11 +40,11 @@ fpath = '../../outFiles/'
 # read grid from first HDF5 file
 fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFirst)+'.h5'
 print('Reading grid from', fnam, 'with:')
-f  = h5py.File(fnam, 'r') # open hdf5 file for read only
-r  = np.array(f['grid/r'])
-z  = np.array(f['grid/z'])
-th = np.array(f['grid/th'])
-f.close() # close hdf5 file
+f  = h5py.File(fnam, 'r')    # open hdf5 file for read only
+r  = np.array(f['grid/r'])   # radial co-ordinate
+th = np.array(f['grid/th'])  # azimuthal co-ordinate
+z  = np.array(f['grid/z'])   # axial co-ordainte
+f.close()                    # close hdf5 file
 
 # report grid size
 nr  = len(r)
@@ -171,7 +169,7 @@ for iFile in iFiles:
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tqs), 'seconds')
 
     # compute correlations and sum up temporal (ensemble) statistics
-    t4 = timeit.default_timer()
+    tcorr = timeit.default_timer()
     print('Computing 2d correlations... ', end='', flush=True)
     import crossCorrelation as c 
     acQ1   = acQ1   + c.corr2d(q1,   q1)   # auto-correlations
@@ -183,7 +181,7 @@ for iFile in iFiles:
     ccQ2Pi = ccQ2Pi + c.corr2d(q2,   pi2d)
     ccQ3Pi = ccQ3Pi + c.corr2d(q3,   pi2d)
     ccQ4Pi = ccQ4Pi + c.corr2d(q4,   pi2d)
-    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t4), 'seconds')
+    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tcorr), 'seconds')
 
     # increase temporal/ensemble counter
     nt = nt + 1
