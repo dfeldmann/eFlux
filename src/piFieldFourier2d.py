@@ -2,7 +2,7 @@
 # Purpose:  Read full 3d pipe flow velocity fields from one or more HDF5 files.
 #           Read the computational grid in cylindrical co-ordinates from one of
 #           these files. Read a statistically converged mean velocity profile
-#           from a separate ascii file and subtract it from the each snapshot to
+#           from a separate ascii file and subtract it from each snapshot to
 #           obtain the fluctuating velocity field. Define filter widths and
 #           compute the inter-scale turbulent kinetic energy flux field for each
 #           individual snapshot based on a two-dimensional spatial Fourier filter

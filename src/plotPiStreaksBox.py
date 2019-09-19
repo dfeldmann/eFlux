@@ -125,6 +125,7 @@ SkyBlue       = '#56B4E9'
 ReddishPurple = '#CC79A7'
 Yellow        = '#F0E442'
 Black         = '#000000'
+Grey          = '#999999'
 exec(open("./colourMaps.py").read()) # 
 VermBlue = CBWcm['VeBu']             # Vermillion (-) White (0) Blue (+)
 

@@ -2,7 +2,7 @@
 # Purpose:  Read pre-computed 2d correlation maps in a wall-parallel plane for
 #           the energy flux (Pi) and the axial velocity component (u'_z)
 #           representing streamwise streaks. Correlation maps are read from
-#           ascii and plotted for three different filters (Fourer, Gauss, box)
+#           ascii and plotted for three different filters (Fourier, Gauss, box)
 #           to compare the effect of the filter kernel. Additional contour
 #           lines can be plotted on top. Output is interactive or as pfd
 #           figure file. TODO: find out how to read number following a
