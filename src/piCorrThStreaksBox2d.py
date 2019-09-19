@@ -14,9 +14,9 @@
 #           (representing streaks), for the axial vorticity component
 #           (representing streamwise alligned vortices) and for the energy flux,
 #           cross-correlations for all of these quantities with the energy flux.
-#           Do statistics over all axial locations and all snapshots, and write
-#           the resulting 1d correlations to a single ascii file. Optionally,
-#           plot the results interactively or as pdf figure file.
+#           Do statistics over all axial (z) locations and all snapshots, and
+#           write the resulting 1d correlations to a single ascii file.
+#           Optionally, plot the results interactively or as pdf figure file.
 # Usage:    python piCorrThStreaksBox2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
@@ -213,8 +213,6 @@ uzRms      = np.sqrt(uz2 - uz1**2)
 uzFRms     = np.sqrt(uzF2 - uzF1**2)
 omegaZRms  = np.sqrt(omegaZ2 - omegaZ1**2)
 piRms      = np.sqrt(pi2 - pi1**2)
-#print('uzMean', uz1)
-#print('uzRms', uzRms)
 
 # normalise correlations with local RMS 
 acUz       = acUz       / (uzRms     * uzRms)
@@ -229,7 +227,6 @@ print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-
 
 # compute centered azimuthal separation/displacement (for nice plotting only)
 DeltaTh = (th - (th[-1] - th[0]) / 2.0) * r[k]
-# DeltaZ  =   z - ( z[-1] -  z[0]) / 2.0
 
 # write 1d correlations to ascii file
 fnam = 'piCorrThStreaksBox2d_pipe0002_'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
@@ -298,8 +295,8 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False) 
-fig = plt.figure(num=None, dpi=100) # , constrained_layout=False)
+fig = plt.figure(num=None, figsize=mm2inch(134.0, 70.0), dpi=300) # , constrained_layout=False) 
+#fig = plt.figure(num=None, dpi=100) # , constrained_layout=False)
 
 # conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
 Vermillion    = '#D55E00'
