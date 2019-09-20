@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Purpose:  slurm batch script to submit Python eFlux job to fsmcluster@zarm
+# Usage:    sbatch piCorrZStreaksGauss2d.run
+# Author:   Daniel Feldmann, Jan Chen
+# Created:  09th May 2017
+# Modified: 20th September 2019
+#
+#SBATCH --job-name piCorrZStreaksGauss2d               # -J name of the job/case
+#SBATCH --nodes=1                                           # -N number of nodes
+#SBATCH --ntasks=16                                     # -n number of mpi tasks
+#SBATCH --time=01:00:00                      # job wall-clock time in [hh:mm:ss]
+##SBATCH --error=slurm_%A_%a.err                   # no separate errout log file
+#SBATCH --export=NONE                           # start with a clean environment
+#
+#SBATCH --mail-user=daniel.feldmann@zarm.uni-bremen.de
+#SBATCH --mail-type=BEGIN --mail-type=END
+
+# initialising statement
+date --rfc-3339=seconds
+
+# make modules available
+module purge                                    # start with a clean environment
+module load Anaconda3/5.1.0                                       # load Python3
+module list 2>&1                                         # report loaded modules
+
+# main call
+echo "Call python post-processing run"
+python piCorrZStreaksGauss2d.py
+
+# end statement
+echo "Finished Python job $SLURM_JOBID on fsmcluster.zarm.uni-bremen.de"
+date --rfc-3339=seconds
+
+# finally rename slurm log file to something more useful
+SLG=slurm-${SLURM_JOBID}.out
+LOG=${SLURM_JOB_NAME}_fsm$(printf "%0*i" 6 $SLURM_JOB_ID).log
+mv $SLG $LOG
