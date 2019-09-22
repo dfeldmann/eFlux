@@ -5,21 +5,21 @@
 #           from a separate ascii file and subtract it from each snapshot to
 #           obtain the fluctuating velocity field. Define the filter widths and
 #           compute the inter-scale turbulent kinetic energy flux field (Pi) for
-#           each individual snapshot based on a two-dimensional spatial Fourier
+#           each individual snapshot based on a two-dimensional spatial box
 #           filter operation in wall-parallel planes for each radial location.
 #           Additionally, extract Q events from the velocity field for each
 #           snapshot. Finally, compute one-dimensional two-point correlations
-#           in azimuthal (theta) direction; auto-correlations for the Q events
+#           in axial (z) direction; auto-correlations for the Q events
 #           (representing important features of the near-wall cycle) and for the
 #           energy flux, cross-correlations for all of the Q events with the
-#           energy flux. Do statistics over all axial (z) locations and all
-#           snapshots, and write the resulting 1d correlations to a single ascii
-#           file. Optionally, plot the results interactively or as pdf figure
-#           file.
-# Usage:    python piCorrThQsFourier2d.py
+#           energy flux. Do statistics over all azimuthal (theta) locations and
+#           all snapshots, and write the resulting 1d correlations to a single
+#           ascii file. Optionally, plot the results interactively or as pdf
+#           figure file.
+# Usage:    python piCorrZQsBox2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
-# Modified: 20th September 2019
+# Modified: 23rd September 2019
 
 import timeit
 import math
@@ -30,11 +30,11 @@ import h5py
 plot = 2
 
 # range of state files to read flow field data
-iFirst =   570000
+iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
-print('Compute eFlux (Fourier) and 1d azimuthal correlations with Q events for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
+print('Compute eFlux (Box) and 1d axial correlations with Q events for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
 # path to data files (do modify)
 fpath = '../../outFiles/'
@@ -77,15 +77,15 @@ from joblib import Parallel, delayed
 print("Running on", multiprocessing.cpu_count(), "cores")
 
 # prepare arrays for statistics
-acQ1   = np.zeros(nth) # initialise auto-correlation for Q1 outward interactions
-acQ2   = np.zeros(nth) # initialise auto-correlation for Q2 ejection events
-acQ3   = np.zeros(nth) # initialise auto-correlation for Q3 inward interactions
-acQ4   = np.zeros(nth) # initialise auto-correlation for Q4 sweep events
-acPi   = np.zeros(nth) # initialise auto-correlation for Pi
-ccQ1Pi = np.zeros(nth) # initialise cross-correlation for Q1 eFlux
-ccQ2Pi = np.zeros(nth) # initialise cross-correlation for Q2 eFlux
-ccQ3Pi = np.zeros(nth) # initialise cross-correlation for Q3 eFlux
-ccQ4Pi = np.zeros(nth) # initialise cross-correlation for Q4 eFlux
+acQ1   = np.zeros(nz) # initialise auto-correlation for Q1 outward interactions
+acQ2   = np.zeros(nz) # initialise auto-correlation for Q2 ejection events
+acQ3   = np.zeros(nz) # initialise auto-correlation for Q3 inward interactions
+acQ4   = np.zeros(nz) # initialise auto-correlation for Q4 sweep events
+acPi   = np.zeros(nz) # initialise auto-correlation for Pi
+ccQ1Pi = np.zeros(nz) # initialise cross-correlation for Q1 eFlux
+ccQ2Pi = np.zeros(nz) # initialise cross-correlation for Q2 eFlux
+ccQ3Pi = np.zeros(nz) # initialise cross-correlation for Q3 eFlux
+ccQ4Pi = np.zeros(nz) # initialise cross-correlation for Q4 eFlux
 nt     = 0             # reset ensemble counter
 
 # first and second statistical moments for normalisation
@@ -126,15 +126,15 @@ for iFile in iFiles:
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
     tfilter = timeit.default_timer()
     import filter2d as f2
-    u_rF    = f2.fourier2d(u_r,       lambdaTh, lambdaZ, r, th, z)
-    u_thF   = f2.fourier2d(u_th,      lambdaTh, lambdaZ, r, th, z)
-    u_zF    = f2.fourier2d(u_z,       lambdaTh, lambdaZ, r, th, z)
-    u_rRF   = f2.fourier2d(u_r*u_r,   lambdaTh, lambdaZ, r, th, z)
-    u_rThF  = f2.fourier2d(u_r*u_th,  lambdaTh, lambdaZ, r, th, z)
-    u_rZF   = f2.fourier2d(u_r*u_z,   lambdaTh, lambdaZ, r, th, z)
-    u_thThF = f2.fourier2d(u_th*u_th, lambdaTh, lambdaZ, r, th, z)
-    u_thZF  = f2.fourier2d(u_th*u_z,  lambdaTh, lambdaZ, r, th, z)
-    u_zZF   = f2.fourier2d(u_z*u_z,   lambdaTh, lambdaZ, r, th, z)
+    u_rF    = f2.box2d(u_r,       lambdaTh, lambdaZ, r, th, z)
+    u_thF   = f2.box2d(u_th,      lambdaTh, lambdaZ, r, th, z)
+    u_zF    = f2.box2d(u_z,       lambdaTh, lambdaZ, r, th, z)
+    u_rRF   = f2.box2d(u_r*u_r,   lambdaTh, lambdaZ, r, th, z)
+    u_rThF  = f2.box2d(u_r*u_th,  lambdaTh, lambdaZ, r, th, z)
+    u_rZF   = f2.box2d(u_r*u_z,   lambdaTh, lambdaZ, r, th, z)
+    u_thThF = f2.box2d(u_th*u_th, lambdaTh, lambdaZ, r, th, z)
+    u_thZF  = f2.box2d(u_th*u_z,  lambdaTh, lambdaZ, r, th, z)
+    u_zZF   = f2.box2d(u_z*u_z,   lambdaTh, lambdaZ, r, th, z)
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tfilter), 'seconds')
 
     # compute instantaneous energy flux
@@ -146,25 +146,25 @@ for iFile in iFiles:
 
     # fix wall-normal (radial) location
     k = 65
-    print("Extracting 1d azimuthal data sets at wall-normal location y+ =", (1-r[k])*ReTau)
+    print("Extracting 1d axial data sets at wall-normal location y+ =", (1-r[k])*ReTau)
     
     tcorr = timeit.default_timer()
     print('Extracting Q events and computing 1d correlations... ', end='', flush=True)
 
-    # loop over all axial (z) locations
-    for l in range(nz):
+    # loop over all azimuthal (theta) locations
+    for l in range(nth):
 
-        # extract 1d data sub-sets along azimuthal line at constant wall distance
-        ur1d = u_r[k, :, l]  # data structure is (r, theta, z)
-        uz1d = u_z[k, :, l] 
-        pi1d =  pi[k, :, l]
+        # extract 1d data sub-sets along axial line at constant wall distance
+        ur1d = u_r[k, l, :]  # data structure is (r, theta, z)
+        uz1d = u_z[k, l, :] 
+        pi1d =  pi[k, l, :]
 
         # detect and extract Q events from the 1d volocity sub-set
-        q1 = np.zeros(nth) #* 1.0
-        q2 = np.zeros(nth) #* 2.0
-        q3 = np.zeros(nth) #+ 1.0
-        q4 = np.zeros(nth) #+ 2.0
-        for i in range(nth):
+        q1 = np.zeros(nz)
+        q2 = np.zeros(nz)
+        q3 = np.zeros(nz)
+        q4 = np.zeros(nz)
+        for i in range(nz):
          if (uz1d[i]>0) and (ur1d[i]<0): q1[i] = ur1d[i]*uz1d[i] # outward interaction: high-speed fluid away from wall
          if (uz1d[i]<0) and (ur1d[i]<0): q2[i] = ur1d[i]*uz1d[i] # ejection event:       low-speed fluid away from wall
          if (uz1d[i]<0) and (ur1d[i]>0): q3[i] = ur1d[i]*uz1d[i] # inward interaction:   low-speed fluid towards   wall
@@ -172,7 +172,7 @@ for iFile in iFiles:
         ioi = q1 - q3 # unify inward interactions (Q3 being negativ) and outward interactions (Q1 being positive) in one array
         see = q2 - q4 # unify sweep events (Q4 being negativ) and ejection events (Q2 being positiv) in one array
     
-        # compute correlations and sum up axial (spatial) and temporal (ensemble) statistics
+        # compute correlations and sum up azimuthal (spatial) and temporal (ensemble) statistics
         import crossCorrelation as c 
         acQ1   = acQ1   + c.corr1d(q1,   q1)   # auto-correlations
         acQ2   = acQ2   + c.corr1d(q2,   q2)
@@ -202,15 +202,15 @@ for iFile in iFiles:
     nt = nt + 1
 
 # divide correlation statistics by total number of spatio-temporal samples
-acQ1   = acQ1   / (nt*nz)
-acQ2   = acQ2   / (nt*nz)
-acQ3   = acQ3   / (nt*nz)
-acQ4   = acQ4   / (nt*nz)
-acPi   = acPi   / (nt*nz)
-ccQ1Pi = ccQ1Pi / (nt*nz)
-ccQ2Pi = ccQ2Pi / (nt*nz)
-ccQ3Pi = ccQ3Pi / (nt*nz)
-ccQ4Pi = ccQ4Pi / (nt*nz)
+acQ1   = acQ1   / (nt*nth)
+acQ2   = acQ2   / (nt*nth)
+acQ3   = acQ3   / (nt*nth)
+acQ4   = acQ4   / (nt*nth)
+acPi   = acPi   / (nt*nth)
+ccQ1Pi = ccQ1Pi / (nt*nth)
+ccQ2Pi = ccQ2Pi / (nt*nth)
+ccQ3Pi = ccQ3Pi / (nt*nth)
+ccQ4Pi = ccQ4Pi / (nt*nth)
 
 # divide normalisation statistics by total number of spatio-temporal samples
 q11 = q11 / (nth*nz*nt)
@@ -244,13 +244,13 @@ ccQ4Pi = ccQ4Pi / (q4Rms*piRms)
 
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
-# compute centered azimuthal separation/displacement (for nice plotting only)
-DeltaTh = (th - (th[-1] - th[0]) / 2.0) * r[k]
+# compute centered axial separation/displacement (for nice plotting only)
+DeltaZ = z - (z[-1] - z[0]) / 2.0
 
 # write 1d correlations to ascii file
-fnam = 'piCorrThQsFourier2d_pipe0002_'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
+fnam = 'piCorrZQsBox2d_pipe0002_'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
 f = open(fnam, 'w')
-f.write("# One-dimensional two-point correlations in azimuthal (theta) direction\n")
+f.write("# One-dimensional two-point correlations in axial (z) direction\n")
 f.write("# At wall-normal location r = %f -> y+ = %f\n" % (r[k], (1.0-r[k])*ReTau))
 f.write("# For the following flow variables:\n")
 f.write("# + Q1 outward interactions (u'_z > 0 and u'_r < 0)\n")
@@ -264,8 +264,8 @@ f.write("# + Azimuthal filter scale: lambdaTh+ = %f viscous units, lambdaTh = %f
 f.write("# + Axial filter scale:     lambdaZ+  = %f viscous units, lambdaZ  = %f R\n" % (lambdaZp,  lambdaZ))
 f.write("# Python post-processing on data set nsPipe/pipe0002 generated in a DNS using nsPipe\n")
 f.write("# Temporal (ensemble) averaging over %d sample(s)\n" % (nt))
-f.write("# Additional spatial averaging in axial (z) direction over %d points\n" % (nz))
-f.write("# 01st column: Azimuthal separation DeltaTh in units of pipe radii (R), nth = %d points\n" % nth)
+f.write("# Additional spatial averaging in azimuthal (theta) direction over %d points\n" % (nth))
+f.write("# 01st column: Axial separation DeltaZ in units of pipe radii (R), nz = %d points\n" % nz)
 f.write("# 02rd column: Auto-correlation  Q1 with Q1\n")
 f.write("# 03th column: Auto-correlation  Q2 with Q2\n")
 f.write("# 04th column: Auto-correlation  Q3 with Q3\n")
@@ -276,7 +276,7 @@ f.write("# 08th column: Cross-correlation Q2 with Pi\n")
 f.write("# 09th column: Cross-correlation Q3 with Pi\n")
 f.write("# 10th column: Cross-correlation Q4 with Pi\n")
 for i in range(nth):
- f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], acQ1[i], acQ2[i], acQ3[i], acQ4[i], acPi[i], ccQ1Pi[i], ccQ2Pi[i], ccQ3Pi[i], ccQ4Pi[i]))
+ f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaZ[i], acQ1[i], acQ2[i], acQ3[i], acQ4[i], acPi[i], ccQ1Pi[i], ccQ2Pi[i], ccQ3Pi[i], ccQ4Pi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
 
@@ -333,31 +333,31 @@ exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/color
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
 # convert spatial separation from outer to inner unit#s
-DeltaTh = DeltaTh * ReTau
+DeltaZ = DeltaZ * ReTau
 
-# plot azimuthal auto-correlations
+# plot axial auto-correlations
 ax1 = plt.subplot2grid((1, 2), (0, 0), rowspan=1, colspan=1)
-ax1.set_xlabel(r"$\Delta\theta r^+$")
+ax1.set_xlabel(r"$\Delta z^+$")
 ax1.set_ylabel(r"$C$")
 ax1.axhline(y=0.0, color=Grey)
 ax1.axvline(x=0.0, color=Grey)
-ax1.plot(DeltaTh, acQ1, color=Black,       linestyle='-', label=r"$C_{Q_{1}Q_{1}}$")
-ax1.plot(DeltaTh, acQ2, color=Vermillion,  linestyle='-', label=r"$C_{Q_{2}Q_{2}}$")
-ax1.plot(DeltaTh, acQ3, color=Blue,        linestyle='-', label=r"$C_{Q_{3}Q_{3}}$")
-ax1.plot(DeltaTh, acQ4, color=BluishGreen, linestyle='-', label=r"$C_{Q_{4}Q_{4}}$")
-ax1.plot(DeltaTh, acPi, color=Orange,      linestyle='-', label=r"$C_{\Pi\Pi}$")
+ax1.plot(DeltaZ, acQ1, color=Black,       linestyle='-', label=r"$C_{Q_{1}Q_{1}}$")
+ax1.plot(DeltaZ, acQ2, color=Vermillion,  linestyle='-', label=r"$C_{Q_{2}Q_{2}}$")
+ax1.plot(DeltaZ, acQ3, color=Blue,        linestyle='-', label=r"$C_{Q_{3}Q_{3}}$")
+ax1.plot(DeltaZ, acQ4, color=BluishGreen, linestyle='-', label=r"$C_{Q_{4}Q_{4}}$")
+ax1.plot(DeltaZ, acPi, color=Orange,      linestyle='-', label=r"$C_{\Pi\Pi}$")
 ax1.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
-ax1.text(-200.0, 0.75, "Fourier", ha="center", va="center")
+ax1.text(-400.0, 0.75, "Box", ha="center", va="center")
 
-# plot azimuthal cross-correlation
+# plot axial cross-correlation
 ax2 = plt.subplot2grid((1, 2), (0, 1), rowspan=1, colspan=1)
-ax2.set_xlabel(r"$\Delta\theta r^+$")
+ax2.set_xlabel(r"$\Delta z^+$")
 ax2.axhline(y=0.0, color=Grey)
 ax2.axvline(x=0.0, color=Grey)
-ax2.plot(DeltaTh, ccQ1Pi, color=Black,       linestyle='-', label=r"$C_{Q_{1}\Pi}$")
-ax2.plot(DeltaTh, ccQ2Pi, color=Vermillion,  linestyle='-', label=r"$C_{Q_{2}\Pi}$")
-ax2.plot(DeltaTh, ccQ3Pi, color=Blue,        linestyle='-', label=r"$C_{Q_{3}\Pi}$")
-ax2.plot(DeltaTh, ccQ4Pi, color=BluishGreen, linestyle='-', label=r"$C_{Q_{4}\Pi}$")
+ax2.plot(DeltaZ, ccQ1Pi, color=Black,       linestyle='-', label=r"$C_{Q_{1}\Pi}$")
+ax2.plot(DeltaZ, ccQ2Pi, color=Vermillion,  linestyle='-', label=r"$C_{Q_{2}\Pi}$")
+ax2.plot(DeltaZ, ccQ3Pi, color=Blue,        linestyle='-', label=r"$C_{Q_{3}\Pi}$")
+ax2.plot(DeltaZ, ccQ4Pi, color=BluishGreen, linestyle='-', label=r"$C_{Q_{4}\Pi}$")
 ax2.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
 
 # plot mode interactive or pdf
