@@ -34,7 +34,7 @@ iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
-print('Compute eFlux (Gauss) and 1d correlations with Q events for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
+print('Compute eFlux (Gauss) and 1d azimuthal correlations with Q events for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
 # path to data files (do modify)
 fpath = '../../outFiles/'
