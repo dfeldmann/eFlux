@@ -275,7 +275,7 @@ f.write("# 07th column: Cross-correlation Q1 with Pi\n")
 f.write("# 08th column: Cross-correlation Q2 with Pi\n")
 f.write("# 09th column: Cross-correlation Q3 with Pi\n")
 f.write("# 10th column: Cross-correlation Q4 with Pi\n")
-for i in range(nth):
+for i in range(nz):
  f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaZ[i], acQ1[i], acQ2[i], acQ3[i], acQ4[i], acPi[i], ccQ1Pi[i], ccQ2Pi[i], ccQ3Pi[i], ccQ4Pi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)

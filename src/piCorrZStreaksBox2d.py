@@ -256,7 +256,7 @@ f.write("# 05th column: Auto-correlation  Pi      with Pi\n")
 f.write("# 06th column: Cross-correlation u'_z    with Pi\n")
 f.write("# 07th column: Cross-correlation u'_zF   with Pi\n")
 f.write("# 08th column: Cross-correlation omega_z with Pi\n")
-for i in range(nth):
+for i in range(nz):
   f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaZ[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
