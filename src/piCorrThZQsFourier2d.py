@@ -27,12 +27,15 @@ import math
 import numpy as np
 import h5py
 
+# plot mode: (0) none, (1) interactive, (2) pdf
+plot = 2
+
 # range of state files to read flow field data (do modify)
 iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
-print('Compute eFlux (Fourier) and 2d correlation maps for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
+print('Compute eFlux (Fourier) and 2d correlation maps with Q events for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
 # path to data files (do modify)
 fpath = '../../outFiles/'
@@ -85,6 +88,18 @@ ccQ2Pi = np.zeros((nth, nz))  # initialise cross-correlation for Q2 eFlux
 ccQ3Pi = np.zeros((nth, nz))  # initialise cross-correlation for Q3 eFlux
 ccQ4Pi = np.zeros((nth, nz))  # initialise cross-correlation for Q4 eFlux
 nt     = 0                    # reset ensemble counter
+
+# first and second statistical moments for normalisation
+q11 = 0
+q12 = 0
+q21 = 0
+q22 = 0
+q31 = 0
+q32 = 0
+q41 = 0
+q42 = 0
+pi1 = 0
+pi2 = 0
 
 # reset wall-clock time
 t0 = timeit.default_timer()
@@ -143,9 +158,9 @@ for iFile in iFiles:
     # extract 2d data sub-sets in a wall parallel plane
     k = 65 # (do modify)
     print("Extracting 2d data in wall-parallel plane at y+ =", (1-r[k])*ReTau)
+    ur2d = u_r[k, :, :] # data structure is (r, theta, z)
+    uz2d = u_z[k, :, :]
     pi2d =  pi[k, :, :]
-    ur   = u_r[k, :, :]
-    uz   = u_z[k, :, :]
     #q12d = q1[k, :, :] # TODO: compute correlation maps for ALL wall-parallel planes
     #q22d = q2[k, :, :]
     #q32d = q3[k, :, :]
@@ -154,18 +169,18 @@ for iFile in iFiles:
     # detect and extract Q events from the 2d volocity sub-set
     tqs = timeit.default_timer()
     print("Extracting Q events from 2d volocity field...", end='', flush=True)
-    q1 = np.zeros((ur.shape))
-    q2 = np.zeros((ur.shape))
-    q3 = np.zeros((ur.shape))
-    q4 = np.zeros((ur.shape))
+    q1 = np.zeros(ur2d.shape)
+    q2 = np.zeros(ur2d.shape)
+    q3 = np.zeros(ur2d.shape)
+    q4 = np.zeros(ur2d.shape)
     for i in range(nz):
      for j in range(nth):
-      if (uz[j,i]>0) and (ur[j,i]<0): q1[j,i] = ur[j,i]*uz[j,i] # outward interaction: high-speed fluid away from wall
-      if (uz[j,i]<0) and (ur[j,i]<0): q2[j,i] = ur[j,i]*uz[j,i] # ejection event:       low-speed fluid away from wall
-      if (uz[j,i]<0) and (ur[j,i]>0): q3[j,i] = ur[j,i]*uz[j,i] # inward interaction:   low-speed fluid towards   wall
-      if (uz[j,i]>0) and (ur[j,i]>0): q4[j,i] = ur[j,i]*uz[j,i] # sweep event:         high-speed fluid towards   wall
-    #ioi = q1 - q3 # unify inward interactions (Q3 being negativ) and outward interactions (Q1 being positive) in one array
-    #see = q2 - q4 # unify sweep events (Q4 being negativ) and ejection events (Q2 being positiv) in one array
+      if (uz2d[j,i]>0) and (ur2d[j,i]<0): q1[j,i] = ur2d[j,i]*uz2d[j,i] # outward interaction: high-speed fluid away from wall
+      if (uz2d[j,i]<0) and (ur2d[j,i]<0): q2[j,i] = ur2d[j,i]*uz2d[j,i] # ejection event:       low-speed fluid away from wall
+      if (uz2d[j,i]<0) and (ur2d[j,i]>0): q3[j,i] = ur2d[j,i]*uz2d[j,i] # inward interaction:   low-speed fluid towards   wall
+      if (uz2d[j,i]>0) and (ur2d[j,i]>0): q4[j,i] = ur2d[j,i]*uz2d[j,i] # sweep event:         high-speed fluid towards   wall
+    ioi = q1 - q3 # unify inward interactions (Q3 being negativ) and outward interactions (Q1 being positive) in one array
+    see = q2 - q4 # unify sweep events (Q4 being negativ) and ejection events (Q2 being positiv) in one array
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tqs), 'seconds')
 
     # compute correlations and sum up temporal (ensemble) statistics
@@ -183,10 +198,22 @@ for iFile in iFiles:
     ccQ4Pi = ccQ4Pi + c.corr2d(q4,   pi2d)
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tcorr), 'seconds')
 
+    # sum up first and second statistical moments in time and (homogeneous) theta and z direction for normalisation
+    q11 = q11 + np.sum(np.sum(q1,      axis=1), axis=0) # sum over all elements of 2d data sub set
+    q12 = q12 + np.sum(np.sum(q1**2,   axis=1), axis=0)
+    q21 = q21 + np.sum(np.sum(q2,      axis=1), axis=0)
+    q22 = q22 + np.sum(np.sum(q2**2,   axis=1), axis=0)
+    q31 = q31 + np.sum(np.sum(q3,      axis=1), axis=0)
+    q32 = q32 + np.sum(np.sum(q3**2,   axis=1), axis=0)
+    q41 = q41 + np.sum(np.sum(q4,      axis=1), axis=0)
+    q42 = q42 + np.sum(np.sum(q4**2,   axis=1), axis=0)
+    pi1 = pi1 + np.sum(np.sum(pi2d,    axis=1), axis=0)
+    pi2 = pi2 + np.sum(np.sum(pi2d**2, axis=1), axis=0)
+
     # increase temporal/ensemble counter
     nt = nt + 1
 
-# divide by total number of temporal samples
+# divide correlation statistics by total number of temporal samples
 acQ1   = acQ1   / nt
 acQ2   = acQ2   / nt
 acQ3   = acQ3   / nt
@@ -195,11 +222,62 @@ ccQ1Pi = ccQ1Pi / nt
 ccQ2Pi = ccQ2Pi / nt
 ccQ3Pi = ccQ3Pi / nt
 ccQ4Pi = ccQ4Pi / nt
+
+# divide normalisation statistics by total number of spatio-temporal samples
+q11 = q11 / (nth*nz*nt)
+q12 = q12 / (nth*nz*nt)
+q21 = q21 / (nth*nz*nt)
+q22 = q22 / (nth*nz*nt)
+q31 = q31 / (nth*nz*nt)
+q32 = q32 / (nth*nz*nt)
+q41 = q41 / (nth*nz*nt)
+q42 = q42 / (nth*nz*nt)
+pi1 = pi1 / (nth*nz*nt)
+pi2 = pi2 / (nth*nz*nt)
+
+# compute RMS for normalisation
+q1Rms = np.sqrt(q12 - q11**2)
+q2Rms = np.sqrt(q22 - q21**2)
+q3Rms = np.sqrt(q32 - q31**2)
+q4Rms = np.sqrt(q42 - q41**2)
+piRms = np.sqrt(pi2 - pi1**2)
+
+# normalise correlations with local RMS 
+acQ1   = acQ1   / (q1Rms*q1Rms)
+acQ2   = acQ2   / (q2Rms*q2Rms)
+acQ3   = acQ3   / (q3Rms*q3Rms)
+acQ4   = acQ4   / (q4Rms*q4Rms)
+acPi   = acPi   / (piRms*piRms)
+ccQ1Pi = ccQ1Pi / (q1Rms*piRms)
+ccQ2Pi = ccQ2Pi / (q2Rms*piRms)
+ccQ3Pi = ccQ3Pi / (q3Rms*piRms)
+ccQ4Pi = ccQ4Pi / (q4Rms*piRms)
+
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
 # compute centered azimuthal and axial separation/displacement (for nice plotting only)
 DeltaTh = (th - (th[-1] - th[0]) / 2.0) * r[k]
 DeltaZ  =   z - ( z[-1] -  z[0]) / 2.0
+
+# find and report absolute maxima of 2d data sets
+amacQ1   = np.max(np.abs(acQ1))   # auto-correlation Q1 max
+amacQ2   = np.max(np.abs(acQ2))   # auto-correlation Q2 max
+amacQ3   = np.max(np.abs(acQ3))   # auto-correlation Q3 max
+amacQ4   = np.max(np.abs(acQ4))   # auto-correlation Q4 max
+amacPi   = np.max(np.abs(acPi))   # auto-correlation Pi max
+amccQ1Pi = np.max(np.abs(ccQ1Pi)) # cross-correlation Q1 Pi max
+amccQ2Pi = np.max(np.abs(ccQ2Pi)) # cross-correlation Q2 Pi max
+amccQ3Pi = np.max(np.abs(ccQ3Pi)) # cross-correlation Q3 Pi max
+amccQ4Pi = np.max(np.abs(ccQ4Pi)) # cross-correlation Q4 Pi max
+print("Absolute maximum auto-correlation value  Q1 Q1:", amacQ1)
+print("Absolute maximum auto-correlation value  Q2 Q2:", amacQ2)
+print("Absolute maximum auto-correlation value  Q3 Q3:", amacQ3)
+print("Absolute maximum auto-correlation value  Q4 Q4:", amacQ4)
+print("Absolute maximum auto-correlation value  Pi Pi:", amacPi)
+print("Absolute maximum cross-correlation value Q1 Pi:", amccQ1Pi)
+print("Absolute maximum cross-correlation value Q2 Pi:", amccQ2Pi)
+print("Absolute maximum cross-correlation value Q3 Pi:", amccQ3Pi)
+print("Absolute maximum cross-correlation value Q4 Pi:", amccQ4Pi)
 
 # write 2d correlation maps to ascii file
 fnam = 'piCorrThZQsFourier2d_pipe0002_'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
@@ -236,5 +314,176 @@ for i in range(nth):
   f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], DeltaZ[j], acQ1[i,j], acQ2[i,j], acQ3[i,j], acQ4[i,j], acPi[i,j], ccQ1Pi[i,j], ccQ2Pi[i,j], ccQ3Pi[i,j], ccQ4Pi[i,j]))
 f.close()
 print('Written 2d correlation maps to file', fnam)
+
+# plotting
+if plot not in [1, 2]: sys.exit() # skip everything below
+print('Creating plot (using LaTeX)...')
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['text.latex.preamble'] = [
+r"\usepackage[utf8]{inputenc}",
+r"\usepackage[T1]{fontenc}",
+r'\usepackage{lmodern, palatino, eulervm}',
+#r'\usepackage{mathptmx}',
+r"\usepackage[detect-all]{siunitx}",
+r'\usepackage{amsmath, amstext, amssymb}',
+r'\usepackage{xfrac}']
+#mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 8})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
+
+# create figure suitable for A4 format
+def mm2inch(*tupl):
+ inch = 25.4
+ if isinstance(tupl[0], tuple):
+  return tuple(i/inch for i in tupl[0])
+ else:
+   return tuple(i/inch for i in tupl)
+#fig = plt.figure(num=None, figsize=mm2inch(134.0, 70.0), dpi=300) # , constrained_layout=False) 
+fig = plt.figure(num=None, dpi=200) # , constrained_layout=False)
+
+# conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
+Vermillion    = '#D55E00'
+Blue          = '#0072B2'
+BluishGreen   = '#009E73'
+Orange        = '#E69F00'
+SkyBlue       = '#56B4E9'
+ReddishPurple = '#CC79A7'
+Yellow        = '#F0E442'
+Grey          = '#999999'
+Black         = '#000000'
+exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
+VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
+
+# axes grid for multiple subplots with common colour bar
+from mpl_toolkits.axes_grid1 import ImageGrid
+ig = ImageGrid(fig, 111, nrows_ncols=(5, 2), direction='column', axes_pad=(0.6, 0.15), cbar_size=0.07, cbar_mode='each', cbar_location='right', cbar_pad=0.05)
+
+# convert spatial separation from outer to inner unit#s
+DeltaTh = DeltaTh * ReTau
+DeltaZ  = DeltaZ  * ReTau
+
+# define sub-set for plotting (Here in plus units)
+xmin = -200.0 # np.min(DeltaZ)
+xmax =  200.0 # np.max(DeltaZ)
+ymin = -100.0 # np.min(DeltaTh)
+ymax =  100.0 # np.max(DeltaTh)
+
+# plot auto-correlation Pi
+ig[0].set_xlim(left=xmin, right=xmax)
+ig[0].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[0].set_ylim(bottom=ymin, top=ymax)
+im0 = ig[0].imshow(acPi, vmin=-amacPi, vmax=+amacPi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[0].set_aspect('equal')
+fmt = FormatStrFormatter('%5.1f') # colourbar ticks format
+cb0 = ig.cbar_axes[0].colorbar(im0, format=fmt)
+cb0.ax.set_ylabel(r"$C_{\Pi\Pi}$")
+cb0.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation Q1
+ig[1].set_xlim(left=xmin, right=xmax)
+ig[1].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[1].set_ylim(bottom=ymin, top=ymax)
+im1 = ig[1].imshow(acQ1, vmin=-amacQ1, vmax=+amacQ1, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[1].set_aspect('equal')
+cb1 = ig.cbar_axes[1].colorbar(im1, format=fmt)
+cb1.ax.set_ylabel(r"$C_{Q_{1}Q_{1}}$")
+cb1.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation Q2
+ig[2].set_xlim(left=xmin, right=xmax)
+ig[2].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[2].set_ylim(bottom=ymin, top=ymax)
+im2 = ig[2].imshow(acQ2, vmin=-amacQ2, vmax=+amacQ2, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[2].set_aspect('equal')
+cb2 = ig.cbar_axes[2].colorbar(im2, format=fmt)
+cb2.ax.set_ylabel(r"$C_{Q_{2}Q_{2}}$")
+cb2.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation Q3
+ig[3].set_xlim(left=xmin, right=xmax)
+ig[3].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[3].set_ylim(bottom=ymin, top=ymax)
+im3 = ig[3].imshow(acQ3, vmin=-amacQ3, vmax=+amacQ3, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[3].set_aspect('equal')
+cb3 = ig.cbar_axes[3].colorbar(im3, format=fmt)
+cb3.ax.set_ylabel(r"$C_{Q_{3}Q_{3}}$")
+cb3.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation Q4
+ig[4].set_xlabel(r"$\Delta z^{+}$")
+ig[4].set_xlim(left=xmin, right=xmax)
+ig[4].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[4].set_ylim(bottom=ymin, top=ymax)
+im4 = ig[4].imshow(acQ4, vmin=-amacQ4, vmax=+amacQ4, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[4].set_aspect('equal')
+cb4 = ig.cbar_axes[4].colorbar(im4, format=fmt)
+cb4.ax.set_ylabel(r"$C_{Q_{4}Q_{4}}$")
+cb4.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# empty space for filter kernel label
+filterBox = dict(boxstyle="square, pad=0.3", lw=0.5, fc='w', ec=Black)
+ig[5].axis("off")
+ig[5].text(0.0, 0.0, r"Fourier", ha="center", va="center", rotation=0, bbox=filterBox)
+
+# plot cross-correlation Q1 Pi
+ig[6].set_xlim(left=xmin, right=xmax)
+ig[6].set_ylim(bottom=ymin, top=ymax)
+im6 = ig[6].imshow(ccQ1Pi, vmin=-amccQ1Pi, vmax=+amccQ1Pi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[6].set_aspect('equal')
+cb6 = ig.cbar_axes[6].colorbar(im6, format=fmt)
+cb6.ax.set_ylabel(r"$C_{Q_{1}\Pi}$")
+cb6.ax.set_yticks([-amccQ1Pi, 0.0, +amccQ1Pi])
+
+# plot cross-correlation Q2 Pi
+ig[7].set_xlim(left=xmin, right=xmax)
+ig[7].set_ylim(bottom=ymin, top=ymax)
+im7 = ig[7].imshow(ccQ2Pi, vmin=-amccQ2Pi, vmax=+amccQ2Pi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[7].set_aspect('equal')
+cb7 = ig.cbar_axes[7].colorbar(im7, format=fmt)
+cb7.ax.set_ylabel(r"$C_{Q_{2}\Pi}$")
+cb7.ax.set_yticks([-amccQ2Pi, 0.0, +amccQ2Pi])
+
+# plot cross-correlation Q3 Pi
+ig[8].set_xlim(left=xmin, right=xmax)
+ig[8].set_ylim(bottom=ymin, top=ymax)
+im8 = ig[8].imshow(ccQ3Pi, vmin=-amccQ3Pi, vmax=+amccQ3Pi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[8].set_aspect('equal')
+cb8 = ig.cbar_axes[8].colorbar(im8, format=fmt)
+cb8.ax.set_ylabel(r"$C_{Q_{3}\Pi}$")
+cb8.ax.set_yticks([-amccQ3Pi, 0.0, +amccQ3Pi])
+
+# plot cross-correlation Q4 Pi
+ig[9].set_xlabel(r"$\Delta z^{+}$")
+ig[9].set_xlim(left=xmin, right=xmax)
+ig[9].set_ylim(bottom=ymin, top=ymax)
+im9 = ig[9].imshow(ccQ4Pi, vmin=-amccQ4Pi, vmax=+amccQ4Pi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[9].set_aspect('equal')
+cb9 = ig.cbar_axes[9].colorbar(im9, format=fmt)
+cb9.ax.set_ylabel(r"$C_{Q_{4}\Pi}$")
+cb9.ax.set_yticks([-amccQ4Pi, 0.0, +amccQ4Pi])
+
+# plot mode interactive or pdf
+if plot != 2:
+ #plt.tight_layout()
+ plt.show()
+else:
+ #fig.tight_layout()
+ fnam = str.replace(fnam, '.dat', '.pdf')
+ plt.savefig(fnam)
+ print('Written file', fnam)
+fig.clf()
 
 print('Done!')
