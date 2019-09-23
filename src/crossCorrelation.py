@@ -8,7 +8,7 @@
 # Usage:    python crossCorrelation.py 
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 16th September 2019
+# Modified: 23rd September 2019
 
 
 
@@ -42,6 +42,7 @@ def corr2d(a, b):
     na = np.linalg.norm(a)              # L2 norm (RMS) of first data series
     nb = np.linalg.norm(b)              # L2 norm (RMS) of second data series
     n  = na * nb                        # for normalisation
+    n = a.size                          # normalise with length of data series
 
     af = np.fft.fft2(a)                 # 2d FFT of first data series
     bf = np.fft.fft2(b)                 # 2d FFT of second data series
