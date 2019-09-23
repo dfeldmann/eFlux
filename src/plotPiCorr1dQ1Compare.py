@@ -7,61 +7,59 @@
 # Usage:    python plotPiCorr1dQ1Compare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 02nd September 2019
+# Modified: 23rd September 2019
 
-import sys
-import os.path
 import timeit
-import math
 import numpy as np
 import h5py
 
 # plot mode: (0) none, (1) interactive, (2) pdf
-print('Plot 1d cross-correlations between energy flux Q1 events based on different kernels.')
+print('Plot 1d cross-correlations between energy flux and Q1 events based on different kernels.')
 plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 
 # some case parameters
 Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu 
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
-# read axial correlation with outward (Q1) interactions for Fourier filtered eFlux from ascii file
-fnam = 'piCorrZQ3Q1Fourier2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading axial correlation for Fourier filtered eFlux', fnam)
-z = np.loadtxt(fnam)[:, 0] # axial separation only once
-czF = np.loadtxt(fnam)[:, 1]
-
-# read axial correlation with outward (Q1) interactions for Gauss filtered eFlux from ascii file
-fnam = 'piCorrZQ3Q1Gauss2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading axial correlation for Gauss filtered eFlux', fnam)
-czG = np.loadtxt(fnam)[:, 1]
-
-# read axial correlation with outward (Q1) interactions for Box filtered eFlux from ascii file
-fnam = 'piCorrZQ3Q1Box2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading axial correlation for Box filtered eFlux', fnam)
-czB = np.loadtxt(fnam)[:, 1]
-
-# read azimuthal correlation with outward (Q1) interactions for Fourier filtered eFlux from ascii file
-fnam = 'piCorrThQ3Q1Fourier2d_pipe0002_00570000to01265000nt0140.dat'
+# read azimuthal correlation with inward (Q3) interactions for Fourier filtered eFlux from ascii file
+fnam = 'piCorrThQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Fourier filtered eFlux', fnam)
-th = np.loadtxt(fnam)[:, 0] # azimuthal separation only once
-cthF = np.loadtxt(fnam)[:, 1]
+th   = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation DeltaTh
+cthF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read azimuthal correlation with outward (Q1) interactions for Gauss filtered eFlux from ascii file
-fnam = 'piCorrThQ3Q1Gauss2d_pipe0002_00570000to01265000nt0140.dat'
+# read azimuthal correlation with inward (Q3) interactions for Gauss filtered eFlux from ascii file
+fnam = 'piCorrThQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Gauss filtered eFlux', fnam)
-cthG = np.loadtxt(fnam)[:, 1]
+cthG = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read azimuthal correlation with outward (Q1) interactions for Box filtered eFlux from ascii file
-fnam = 'piCorrThQ3Q1Box2d_pipe0002_00570000to01265000nt0140.dat'
+# read azimuthal correlation with inward (Q3) interactions for Box filtered eFlux from ascii file
+fnam = 'piCorrThQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Box filtered eFlux', fnam)
-cthB = np.loadtxt(fnam)[:, 1]
+cthB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+
+# read axial correlation with inward (Q3) interactions for Fourier filtered eFlux from ascii file
+fnam = 'piCorrZQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading axial correlation for Fourier filtered eFlux', fnam)
+z   = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation DeltaZ
+czF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+
+# read axial correlation with inward (Q3) interactions for Gauss filtered eFlux from ascii file
+fnam = 'piCorrZQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading axial correlation for Gauss filtered eFlux', fnam)
+czG np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+
+# read axial correlation with inward (Q3) interactions for Box filtered eFlux from ascii file
+fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading axial correlation for Box filtered eFlux', fnam)
+czB np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 # if you change the last occurence of fnam, also change the string replace for pdf file name below
 
 # grid size
 nth = len(th)
 nz  = len(z)
-print('With', nth, 'azimuthal (theta) and', nz, 'axial (z) grid points. It is your responsibility to')
-print('make sure, that all data sets are defined on the exact same grids.')
+print('With', nth, 'azimuthal (theta) grid points')
+print('With', nz, 'axial (z) grid points.')
+print('It is your responsibility to make sure, that all data sets are defined on the exact same grid.')
 
 if plot not in [1, 2]: sys.exit() # skip everything below
 print('Creating plot (using LaTeX)...')
@@ -114,7 +112,7 @@ Yellow        = '#F0E442'
 Black         = '#000000'
 Grey          = '#999999'
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 th = th * Re_tau
 z  =  z * Re_tau
 
@@ -169,7 +167,7 @@ if plot == 1:
 else:
  fig.tight_layout()
  fnam = str.replace(fnam, '.dat', '.pdf')
- fnam = str.replace(fnam, 'piCorrThQ3Q1Box2d', 'plotPiCorr1dQ1Compare')
+ fnam = str.replace(fnam, 'piCorrZQsBox2d', 'plotPiCorr1dQ1Compare')
  plt.savefig(fnam)
  print('Written file', fnam)
 fig.clf()
