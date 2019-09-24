@@ -21,21 +21,21 @@
 # Usage:    python piCorrThZStreaksGauss2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
-# Modified: 16th September 2019
+# Modified: 24th September 2019
 
-import sys
-import os.path
 import timeit
-import math
 import numpy as np
 import h5py
 
+# plot mode: (0) none, (1) interactive, (2) pdf
+plot = 2
+
 # range of state files to read flow field data
-iFirst =  1675000
+iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
-print('Compute eFlux (Gauss) and 2d correlation maps for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
+print('Compute eFlux (Gauss) and 2d correlation maps with streaks for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
 # path to data files (do modify)
 fpath = '../../outFiles/'
@@ -43,11 +43,11 @@ fpath = '../../outFiles/'
 # read grid from first HDF5 file
 fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFirst)+'.h5'
 print('Reading grid from', fnam, 'with:')
-f  = h5py.File(fnam, 'r') # open hdf5 file for read only
-r  = np.array(f['grid/r'])
-z  = np.array(f['grid/z'])
-th = np.array(f['grid/th'])
-f.close() # close hdf5 file
+f  = h5py.File(fnam, 'r')    # open hdf5 file for read only
+r  = np.array(f['grid/r'])   # radial co-ordinate
+th = np.array(f['grid/th'])  # azimuthal co-ordinate
+z  = np.array(f['grid/z'])   # axial co-ordainte
+f.close()                    # close hdf5 file
 
 # report grid size
 nr  = len(r)
@@ -87,12 +87,22 @@ ccUzFPi    = np.zeros((nth, nz))  # initialise cross-correlation for u'_z filter
 ccOmegaZPi = np.zeros((nth, nz))  # initialise cross-correlation for omega_z nd eFlux
 nt         = 0                    # reset ensemble counter
 
+# first and second statistical moments for normalisation
+uz1     = 0
+uz2     = 0
+uzF1    = 0
+uzF2    = 0
+omegaZ1 = 0
+omegaZ2 = 0
+pi1     = 0
+pi2     = 0
+
 # reset wall-clock time
 t0 = timeit.default_timer()
 
 # loop over all state files
 for iFile in iFiles:
-    
+
     # read flow field data from next HDF5 file
     fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     f = h5py.File(fnam, 'r')
@@ -107,18 +117,18 @@ for iFile in iFiles:
     print(' with data structure u',u_z.shape)
 
     # compute instantaneous vorticity vector field
-    t1 = timeit.default_timer()
+    tvort = timeit.default_timer()
     print('Computing vorticity vector field... ', end='', flush=True)
     import vorticity as v
     omegaR, omegaTh, omegaZ = v.omegaCyl(u_r, u_th, u_z, r, th, z)
-    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t1), 'seconds')
-    
+    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tvort), 'seconds')
+
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
     u_z = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
-    
+
     # filter velocity field
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
-    t2 = timeit.default_timer()
+    tfilter = timeit.default_timer()
     import filter2d as f2
     u_rF    = f2.gauss2d(u_r,       lambdaTh, lambdaZ, r, th, z)
     u_thF   = f2.gauss2d(u_th,      lambdaTh, lambdaZ, r, th, z)
@@ -129,14 +139,14 @@ for iFile in iFiles:
     u_thThF = f2.gauss2d(u_th*u_th, lambdaTh, lambdaZ, r, th, z)
     u_thZF  = f2.gauss2d(u_th*u_z,  lambdaTh, lambdaZ, r, th, z)
     u_zZF   = f2.gauss2d(u_z*u_z,   lambdaTh, lambdaZ, r, th, z)
-    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t2), 'seconds')
+    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tfilter), 'seconds')
 
     # compute instantaneous energy flux
-    t3 = timeit.default_timer()
+    tflux = timeit.default_timer()
     print('Computing energy flux... ', end='', flush=True)
     import eFlux
     pi = eFlux.eFlux(u_rF, u_thF, u_zF, u_rRF, u_rThF, u_rZF, u_thThF, u_thZF, u_zZF, r, th, z)
-    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t3), 'seconds')
+    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tflux), 'seconds')
 
     # extract 2d data sub-sets in a wall parallel plane
     k = 65
@@ -147,7 +157,7 @@ for iFile in iFiles:
     pi2d     =     pi[k, :, :]
 
     # compute correlations and sum up temporal (ensemble) statistics
-    t4 = timeit.default_timer()
+    tcorr = timeit.default_timer()
     print('Computing 2d correlations... ', end='', flush=True)
     import crossCorrelation as c 
     acUz       = acUz       + c.corr2d(uz2d,     uz2d)     # auto-correlations
@@ -157,12 +167,22 @@ for iFile in iFiles:
     ccUzPi     = ccUzPi     + c.corr2d(uz2d,     pi2d)     # cross-correlations
     ccUzFPi    = ccUzFPi    + c.corr2d(uzF2d,    pi2d)
     ccOmegaZPi = ccOmegaZPi + c.corr2d(omegaZ2d, pi2d)
-    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t4), 'seconds')
+    print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tcorr), 'seconds')
+
+    # sum up first and second statistical moments in time and (homogeneous) theta and z direction for normalisation
+    uz1     = uz1     + np.sum(np.sum(uz2d,        axis=1), axis=0) # sum over all elements of 2d data sub set
+    uz2     = uz2     + np.sum(np.sum(uz2d**2,     axis=1), axis=0)
+    uzF1    = uzF1    + np.sum(np.sum(uzF2d,       axis=1), axis=0)
+    uzF2    = uzF2    + np.sum(np.sum(uzF2d**2,    axis=1), axis=0)
+    omegaZ1 = omegaZ1 + np.sum(np.sum(omegaZ2d,    axis=1), axis=0)
+    omegaZ2 = omegaZ2 + np.sum(np.sum(omegaZ2d**2, axis=1), axis=0)
+    pi1     = pi1     + np.sum(np.sum(pi2d,        axis=1), axis=0)
+    pi2     = pi2     + np.sum(np.sum(pi2d**2,     axis=1), axis=0)
 
     # increase temporal/ensemble counter
     nt = nt + 1
 
-# divide by total number of temporal samples
+# divide correlation statistics by total number of temporal samples
 acUz       = acUz       / nt
 acUzF      = acUzF      / nt
 acOmegaZ   = acOmegaZ   / nt
@@ -170,11 +190,53 @@ acPi       = acPi       / nt
 ccUzPi     = ccUzPi     / nt
 ccUzFPi    = ccUzFPi    / nt
 ccOmegaZPi = ccOmegaZPi / nt
+
+# divide normalisation statistics by total number of spatio-temporal samples
+uz1     = uz1     / (nth*nz*nt)
+uz2     = uz2     / (nth*nz*nt)
+uzF1    = uzF1    / (nth*nz*nt)
+uzF2    = uzF2    / (nth*nz*nt)
+omegaZ1 = omegaZ1 / (nth*nz*nt)
+omegaZ2 = omegaZ2 / (nth*nz*nt)
+pi1     = pi1     / (nth*nz*nt)
+pi2     = pi2     / (nth*nz*nt)
+
+# compute RMS for normalisation
+uzRms     = np.sqrt(uz2     - uz1**2)
+uzFRms    = np.sqrt(uzF2    - uzF1**2)
+omegaZRms = np.sqrt(omegaZ2 - omegaZ1**2)
+piRms     = np.sqrt(pi2     - pi1**2)
+
+# normalise correlations with local RMS 
+acUz       = acUz       / (uzRms*uzRms)
+acUzF      = acUzF      / (uzFRms*uzFRms)
+acOmegaZ   = acOmegaZ   / (omegaZRms*omegaZRms)
+acPi       = acPi       / (piRms*piRms)
+ccUzPi     = ccUzPi     / (uzRms*piRms)
+ccUzFPi    = ccUzFPi    / (uzFRms*piRms)
+ccOmegaZPi = ccOmegaZPi / (omegaZRms*piRms)
+
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
 # compute centered azimuthal and axial separation/displacement (for nice plotting only)
 DeltaTh = (th - (th[-1] - th[0]) / 2.0) * r[k]
 DeltaZ  =   z - ( z[-1] -  z[0]) / 2.0
+
+# find and report absolute maxima of 2d data sets
+amacUz       = np.max(np.abs(acUz))       # max auto-correlation u'_z
+amacUzF      = np.max(np.abs(acUzF))      # max auto-correlation filtered u'_z
+amacOmegaZ   = np.max(np.abs(acOmegaZ))   # max auto-correlation omega_z
+amacPi       = np.max(np.abs(acPi))       # max auto-correlation Pi
+amccUzPi     = np.max(np.abs(ccUzPi))     # max cross-correlation u'_z Pi
+amccUzFPi    = np.max(np.abs(ccUzFPi))    # max cross-correlation filtered u'_z Pi
+amccOmegaZPi = np.max(np.abs(ccOmegaZPi)) # max cross-correlation omega_z Pi
+print("Absolute maximum auto-correlation value  u'_z    u'_z   :", amacUz)
+print("Absolute maximum auto-correlation value  u'_zF   u'_zF  :", amacUzF)
+print("Absolute maximum auto-correlation value  omega_z omega_z:", amacOmegaZ)
+print("Absolute maximum auto-correlation value  Pi      Pi     :", amacPi)
+print("Absolute maximum cross-correlation value u'_z    Pi     :", amccUzPi)
+print("Absolute maximum cross-correlation value u'_zF   Pi     :", amccUzFPi)
+print("Absolute maximum cross-correlation value omega_z Pi     :", amccOmegaZPi)
 
 # write 2d correlation map to ascii file
 fnam = 'piCorrThZStreaksGauss2d_pipe0002_'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
@@ -207,5 +269,156 @@ for i in range(nth):
   f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], DeltaZ[j], acUz[i,j], acUzF[i,j], acOmegaZ[i,j], acPi[i,j], ccUzPi[i,j], ccUzFPi[i,j], ccOmegaZPi[i,j]))
 f.close()
 print('Written 2d correlation maps to file', fnam)
+
+# plotting
+if plot not in [1, 2]: sys.exit() # skip everything below
+print('Creating plot (using LaTeX)...')
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['text.latex.preamble'] = [
+r"\usepackage[utf8]{inputenc}",
+r"\usepackage[T1]{fontenc}",
+r'\usepackage{lmodern, palatino, eulervm}',
+#r'\usepackage{mathptmx}',
+r"\usepackage[detect-all]{siunitx}",
+r'\usepackage{amsmath, amstext, amssymb}',
+r'\usepackage{xfrac}']
+#mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 8})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
+
+# create figure suitable for A4 format
+def mm2inch(*tupl):
+ inch = 25.4
+ if isinstance(tupl[0], tuple):
+  return tuple(i/inch for i in tupl[0])
+ else:
+   return tuple(i/inch for i in tupl)
+#fig = plt.figure(num=None, figsize=mm2inch(134.0, 70.0), dpi=300) # , constrained_layout=False) 
+fig = plt.figure(num=None, dpi=200) # , constrained_layout=False)
+
+# conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
+Vermillion    = '#D55E00'
+Blue          = '#0072B2'
+BluishGreen   = '#009E73'
+Orange        = '#E69F00'
+SkyBlue       = '#56B4E9'
+ReddishPurple = '#CC79A7'
+Yellow        = '#F0E442'
+Grey          = '#999999'
+Black         = '#000000'
+exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
+VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
+
+# axes grid for multiple subplots with common colour bar
+from mpl_toolkits.axes_grid1 import ImageGrid
+ig = ImageGrid(fig, 111, nrows_ncols=(4, 2), direction='column', axes_pad=(0.6, 0.15), cbar_size=0.07, cbar_mode='each', cbar_location='right', cbar_pad=0.05)
+
+# convert spatial separation from outer to inner unit#s
+DeltaTh = DeltaTh * ReTau
+DeltaZ  = DeltaZ  * ReTau
+
+# define sub-set for plotting (Here in plus units)
+xmin = -200.0 # np.min(DeltaZ)
+xmax =  200.0 # np.max(DeltaZ)
+ymin = -100.0 # np.min(DeltaTh)
+ymax =  100.0 # np.max(DeltaTh)
+
+# plot auto-correlation Pi
+ig[0].set_xlim(left=xmin, right=xmax)
+ig[0].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[0].set_ylim(bottom=ymin, top=ymax)
+im0 = ig[0].imshow(acPi, vmin=-amacPi, vmax=+amacPi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[0].set_aspect('equal')
+fmt = FormatStrFormatter('%5.1f') # colourbar ticks format
+cb0 = ig.cbar_axes[0].colorbar(im0, format=fmt)
+cb0.ax.set_ylabel(r"$C_{\Pi\Pi}$")
+cb0.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation streaks
+ig[1].set_xlim(left=xmin, right=xmax)
+ig[1].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[1].set_ylim(bottom=ymin, top=ymax)
+im1 = ig[1].imshow(acUz, vmin=-amacUz, vmax=+amacUz, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[1].set_aspect('equal')
+cb1 = ig.cbar_axes[1].colorbar(im1, format=fmt)
+cb1.ax.set_ylabel(r"$C_{u^{\prime}_{z} u^{\prime}_{z}}$")
+cb1.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation filtered streaks
+ig[2].set_xlim(left=xmin, right=xmax)
+ig[2].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[2].set_ylim(bottom=ymin, top=ymax)
+im2 = ig[2].imshow(acUzF, vmin=-amacUzF, vmax=+amacUzF, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[2].set_aspect('equal')
+cb2 = ig.cbar_axes[2].colorbar(im2, format=fmt)
+cb2.ax.set_ylabel(r"$C_{\overline{u^{\prime}_{z}} \overline{u^{\prime}_{z}}}$")
+cb2.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# plot auto-correlation vortices
+ig[3].set_xlim(left=xmin, right=xmax)
+ig[3].set_ylabel(r"$\Delta\theta r^{+}$")
+ig[3].set_ylim(bottom=ymin, top=ymax)
+im3 = ig[3].imshow(acOmegaZ, vmin=-amacOmegaZ, vmax=+amacOmegaZ, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[3].set_aspect('equal')
+cb3 = ig.cbar_axes[3].colorbar(im3, format=fmt)
+cb3.ax.set_ylabel(r"$C_{\omega_{z}\omega_{z}}$")
+cb3.ax.set_yticks([-1.0, 0.0, +1.0])
+
+# empty space for filter kernel label
+filterBox = dict(boxstyle="square, pad=0.3", lw=0.5, fc='w', ec=Black)
+ig[4].axis("off")
+ig[4].text(0.0, 0.0, r"Gauss", ha="center", va="center", rotation=0, bbox=filterBox)
+# TODO: remove empty colorbar
+
+# plot cross-correlation streaks Pi
+ig[5].set_xlim(left=xmin, right=xmax)
+ig[5].set_ylim(bottom=ymin, top=ymax)
+im5 = ig[5].imshow(ccUzPi, vmin=-amccUzPi, vmax=+amccUzPi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[5].set_aspect('equal')
+cb5 = ig.cbar_axes[5].colorbar(im5, format=fmt)
+cb5.ax.set_ylabel(r"$C_{u^{\prime}_{z}\Pi}$")
+cb5.ax.set_yticks([-amccUzPi, 0.0, +amccUzPi])
+
+# plot cross-correlation filtered streaks Pi
+ig[6].set_xlim(left=xmin, right=xmax)
+ig[6].set_ylim(bottom=ymin, top=ymax)
+im6 = ig[6].imshow(ccUzFPi, vmin=-amccUzFPi, vmax=+amccUzFPi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[6].set_aspect('equal')
+cb6 = ig.cbar_axes[6].colorbar(im6, format=fmt)
+cb6.ax.set_ylabel(r"$C_{\overline{u^{\prime}_{z}}\Pi}$")
+cb6.ax.set_yticks([-amccUzFPi, 0.0, +amccUzFPi])
+
+# plot cross-correlation vortices Pi
+ig[7].set_xlim(left=xmin, right=xmax)
+ig[7].set_ylim(bottom=ymin, top=ymax)
+im7 = ig[7].imshow(ccOmegaZPi, vmin=-amccOmegaZPi, vmax=+amccOmegaZPi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
+ig[7].set_aspect('equal')
+cb7 = ig.cbar_axes[7].colorbar(im7, format=fmt)
+cb7.ax.set_ylabel(r"$C_{\omega_{z}\Pi}$")
+cb7.ax.set_yticks([-amccOmegaZPi, 0.0, +amccOmegaZPi])
+
+# plot mode interactive or pdf
+if plot != 2:
+ #plt.tight_layout()
+ plt.show()
+else:
+ #fig.tight_layout()
+ fnam = str.replace(fnam, '.dat', '.pdf')
+ plt.savefig(fnam)
+ print('Written file', fnam)
+fig.clf()
 
 print('Done!')
