@@ -12,12 +12,9 @@
 # Usage:    python plotPiCorr2d1dQ3Compare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 19th September 2019
+# Modified: 24th September 2019
 
-import sys
-import os.path
 import timeit
-import math
 import numpy as np
 import h5py
 
@@ -29,47 +26,45 @@ plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu 
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
-# read 1d axial cross-correlation with Q3 events for Fourier filtered eFlux from ascii file
-fnam = 'piCorrZQ3Q1Fourier2d_pipe0002_00570000to01265000nt0140.dat'
-#fnam = 'piCorrZQsFourier2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading 1d cross-correlation from', fnam)
-z1d  = np.loadtxt(fnam)[:, 0] # 1st column: axial separation, only once
-pqzF = np.loadtxt(fnam)[:, 2] # 3rd column: Q3 inward interaction
-
 # read 1d azimuthal cross-correlation with Q3 events for Fourier filtered eFlux from ascii file
-fnam = 'piCorrThQ3Q1Fourier2d_pipe0002_00570000to01265000nt0140.dat'
-#fnam = 'piCorrThQsFourier2d_pipe0002_00570000to01265000nt0140.dat'
+fnam = 'piCorrThQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
-th1d  = np.loadtxt(fnam)[:, 0] # 1st column: azimuthal separation, only once
-pqthF = np.loadtxt(fnam)[:, 2] # 3rd column: Q3 inward interaction
-
-# read 1d axial cross-correlation with Q3 events for Gauss filtered eFlux from ascii file
-fnam = 'piCorrZQ3Q1Gauss2d_pipe0002_00570000to01265000nt0140.dat'
-#fnam = 'piCorrZQsGauss2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading 1d cross-correlation from', fnam)
-pqzG = np.loadtxt(fnam)[:, 2] # 3rd column: Q3 inward interaction
+th1d  = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation, only once
+pqthF = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
 
 # read 1d azimuthal cross-correlation with Q3 events for Gauss filtered eFlux from ascii file
-fnam = 'piCorrThQ3Q1Gauss2d_pipe0002_00570000to01265000nt0140.dat'
-#fnam = 'piCorrThQsGauss2d_pipe0002_00570000to01265000nt0140.dat'
+fnam = 'piCorrThQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
-pqthG = np.loadtxt(fnam)[:, 2] # 3rd column: Q3 inward interaction
-
-# read 1d axial cross-correlation with Q3 events for box filtered eFlux from ascii file
-fnam = 'piCorrZQ3Q1Box2d_pipe0002_00570000to01265000nt0140.dat'
-#fnam = 'piCorrZQsBox2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading 1d cross-correlation from', fnam)
-pqzB = np.loadtxt(fnam)[:, 2] # 3rd column: Q3 inward interaction
+pqthG = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
 
 # read 1d azimuthal cross-correlation with Q3 events for box filtered eFlux from ascii file
-fnam = 'piCorrThQ3Q1Box2d_pipe0002_00570000to01265000nt0140.dat'
-#fnam = 'piCorrThQsBox2d_pipe0002_00570000to01265000nt0140.dat'
+fnam = 'piCorrThQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
-pqthB = np.loadtxt(fnam)[:, 2] # 3rd column: Q3 inward interaction
+pqthB = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
+
+# read 1d axial cross-correlation with Q3 events for Fourier filtered eFlux from ascii file
+fnam = 'piCorrZQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading 1d cross-correlation from', fnam)
+z1d  = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation, only once
+pqzF = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
+
+# read 1d axial cross-correlation with Q3 events for Gauss filtered eFlux from ascii file
+fnam = 'piCorrZQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading 1d cross-correlation from', fnam)
+pqzG = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
+
+# read 1d axial cross-correlation with Q3 events for box filtered eFlux from ascii file
+fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading 1d cross-correlation from', fnam)
+pqzB = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
+
+# manual hack (TODO: read this from header info of piCorrThZ*.dat) 
+nth = 385  # azimuthal points
+nz  = 2305 # axial points
 
 # read 2d cross-correlation with Q3 events for Fourier filtered eFlux from ascii file
 fnam = 'piCorrThZQsFourier2d_pipe0002_01675000to01675000nt0001.dat'
-#fnam = 'piCorrThZQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrThZQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlations from', fnam)
 Dt = np.loadtxt(fnam)[:, 0] #  1st column: Azimuthal displacement
 Dz = np.loadtxt(fnam)[:, 1] #  2nd column: Axial displacement
@@ -77,19 +72,15 @@ f  = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation for Q3 and Pi
 
 # read 2d cross-correlation with Q3 events for Gauss filtered eFlux from ascii file
 fnam = 'piCorrThZQsGauss2d_pipe0002_01675000to01675000nt0001.dat'
-#fnam = 'piCorrThZQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrThZQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlations from', fnam)
 g  = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation for Q3 and Pi
 
 # read 2d cross-correlation with Q3 events for box filtered eFlux from ascii file
 fnam = 'piCorrThZQsBox2d_pipe0002_01675000to01675000nt0001.dat'
-#fnam = 'piCorrThZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrThZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlations from', fnam)
 b  = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation for Q3 and Pi
-
-# manual hack (TODO: read this from header info of piCorrThZ*.dat) 
-nth = 385  # azimuthal points
-nz  = 2305 # axial points
 
 # re-cast cross-correlation data into 2d array for plotting
 # (TODO: this is straight-forward fortran programming style and can maybe be done much more efficiently in Python...?)
@@ -184,10 +175,10 @@ gs = fig.add_gridspec(nrows=4, ncols=2, hspace=0.0, wspace=0.0, width_ratios=[1,
 
 # my data range
 # define sub-set for plotting (Here in plus units)
-xmin = -800.00
-xmax =  800.00
-ymin = -180.00
-ymax =  180.00
+xmin = -600.00
+xmax =  400.00
+ymin = -150.00
+ymax =  150.00
 cmin =   -0.35
 cmax =    0.20
 
@@ -202,8 +193,8 @@ ax1.minorticks_on()
 im1 = ax1.imshow(ccF, vmin=-amcc, vmax=+amcc, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
 cl1n = ax1.contour(DeltaZ, DeltaTh, ccF, levels=[-clm], colors=Vermillion, linestyles='-', linewidths=0.5)
 cl1p = ax1.contour(DeltaZ, DeltaTh, ccF, levels=[+clm], colors=Blue, linestyles='-', linewidths=0.5)
-ax1.text(-750.0, -130.0, r"Fourier", ha="left", va="bottom", rotation=0, bbox=filterBox)
-ax1.text(-765.0,  145.0, r"a)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax1.text(0.98, 0.9, r"Fourier", ha="right", va="top", transform=ax1.transAxes, rotation=0, bbox=filterBox)
+ax1.text(0.02, 0.9, r"a)", ha="left", va="top", transform=ax1.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 2d correlation map for Gauss eFlux
 ax2 = fig.add_subplot(gs[1,0], sharex=ax1)
@@ -216,8 +207,8 @@ ax2.minorticks_on()
 im2 = ax2.imshow(ccG, vmin=-amcc, vmax=+amcc, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
 cl2n = ax2.contour(DeltaZ, DeltaTh, ccG, levels=[-clm], colors=Vermillion, linestyles='-', linewidths=0.5)
 cl2p = ax2.contour(DeltaZ, DeltaTh, ccG, levels=[+clm], colors=Blue, linestyles='-', linewidths=0.5)
-ax2.text(-750.0, -130.0, r"Gauss", ha="left", va="bottom", rotation=0, bbox=filterBox)
-ax2.text(-765.0,  145.0, r"b)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax2.text(0.98, 0.9, r"Gauss", ha="right", va="top", transform=ax2.transAxes, rotation=0, bbox=filterBox)
+ax2.text(0.02, 0.9, r"b)", ha="left", va="top", transform=ax2.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 2d correlation map for box eFlux
 ax3 = fig.add_subplot(gs[2,0], sharex=ax1)
@@ -230,38 +221,40 @@ ax3.minorticks_on()
 im3 = ax3.imshow(ccB, vmin=-amcc, vmax=+amcc, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
 cl3n = ax3.contour(DeltaZ, DeltaTh, ccB, levels=[-clm], colors=Vermillion, linestyles='-', linewidths=0.5)
 cl3p = ax3.contour(DeltaZ, DeltaTh, ccB, levels=[+clm], colors=Blue, linestyles='-', linewidths=0.5)
-ax3.text(-750.0, -130.0, r"Box", ha="left", va="bottom", rotation=0, bbox=filterBox)
-ax3.text(-765.0,  145.0, r"c)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax3.text(0.98, 0.9, r"Box", ha="right", va="top", transform=ax3.transAxes, rotation=0, bbox=filterBox)
+ax3.text(0.02, 0.9, r"c)", ha="left", va="top", transform=ax3.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 1d azimuthal cross-correlation on the right
 ax4 = fig.add_subplot(gs[2,1], sharey = ax3)
 ax4.set_xlabel(r"$C_{Q_{3}\Pi}$")
-ax4.set_xlim(left=-0.15, right=0.05)
-ax4.set_xticks([-0.15, 0.0])
+ax4.set_xlim(left=-0.01, right=0.05)
+ax4.set_xticks([0.0, 0.05])
 ax4.set_ylim(bottom=ymin, top=ymax)
+ax4.minorticks_on()
 ax4.tick_params(labelbottom=True, labelleft=False)
 ax4.axhline(y=0.0, color=Grey)
 ax4.axvline(x=0.0, color=Grey)
 ax4.plot(pqthF, th1d, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax4.plot(pqthG, th1d, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
 ax4.plot(pqthB, th1d, color=Blue,       linestyle='-', zorder=8, label=r"Box")
-ax4.text(-0.19, 145.0, r"d)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax4.text(0.95, 0.9, r"d)", ha="right", va="top", transform=ax4.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 1d axial cross-correlation at the bottom
 ax5 = fig.add_subplot(gs[3,0], sharex = ax1)
 ax5.set_xlabel(r"$\Delta z^+$")
 ax5.set_xlim(left=xmin, right=xmax)
-ax5.set_xticks([-800, -400, 0.0, 400, 800])
+ax5.set_xticks([-600, -400, -200, 0, 200, 400])
+ax5.minorticks_on()
 ax5.set_ylabel(r"$C_{Q_{3}\Pi}$")
 ax5.set_ylim(bottom=-0.15, top=0.15)
 ax5.set_yticks([-0.15, 0.0, 0.15])
 ax5.axhline(y=0.0, color=Grey)
 ax5.axvline(x=0.0, color=Grey)
-ax5.plot(z1d, pqzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
-ax5.plot(z1d, pqzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
-ax5.plot(z1d, pqzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
+#ax5.plot(z1d, pqzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
+#ax5.plot(z1d, pqzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
+#ax5.plot(z1d, pqzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
 ax5.legend(bbox_to_anchor=(1.247, 0.6125), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
-ax5.text(-765.0, 0.07, r"e)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax5.text(0.02, 0.9, r"e)", ha="left", va="top", transform=ax5.transAxes) #, rotation=0, bbox=labelBox)
 
 # add this for consistent representation of images in ax1 to ax3
 # ax1.set_aspect('equal')
