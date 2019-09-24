@@ -28,10 +28,10 @@ import numpy as np
 import h5py
 
 # plot mode: (0) none, (1) interactive, (2) pdf
-plot = 2
+plot = 0
 
 # range of state files to read flow field data
-iFirst =  1675000 # 570000
+iFirst =   570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
