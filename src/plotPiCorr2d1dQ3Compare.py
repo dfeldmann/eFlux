@@ -58,9 +58,12 @@ fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 pqzB = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation Q3 with Pi
 
-# manual hack (TODO: read this from header info of piCorrThZ*.dat) 
-nth = 385  # azimuthal points
-nz  = 2305 # axial points
+# grid size, manual hack (TODO: read this from header info of piCorrThZ*.dat) 
+nth = len(th1d) # 385  # azimuthal grid points
+nz  =  2305 #len(z1d)  # axial grid points
+print('With', nth, 'azimuthal (th) points')
+print('With', nz, 'axial (z) points')
+print('It is your responsibility to make sure that the 2d correlations are defined on the exact same grid.')
 
 # read 2d cross-correlation with Q3 events for Fourier filtered eFlux from ascii file
 fnam = 'piCorrThZQsFourier2d_pipe0002_01675000to01675000nt0001.dat'
