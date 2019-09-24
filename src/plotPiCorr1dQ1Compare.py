@@ -46,12 +46,12 @@ czF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 # read axial correlation with inward (Q3) interactions for Gauss filtered eFlux from ascii file
 fnam = 'piCorrZQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Gauss filtered eFlux', fnam)
-czG np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+czG = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
 # read axial correlation with inward (Q3) interactions for Box filtered eFlux from ascii file
 fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Box filtered eFlux', fnam)
-czB np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+czB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 # if you change the last occurence of fnam, also change the string replace for pdf file name below
 
 # grid size
