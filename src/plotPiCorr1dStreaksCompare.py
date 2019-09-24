@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # Purpose:  Read pre-computed 1d cross-correlations between energy flux and
-#           streaks. Plot azimtuhal (theta) and axial (z) correlation factors
-#           based on different filter kernels (Fourier, Gauss, box) to compare
-#           the influence of the kernel. Output is interactive and as pfd
-#           figure file.
+#           streamwise (high-/low-speed) streaks (u'_z). Plot azimtuhal (theta)
+#           and axial (z) correlation factors based on different filter kernels
+#           (Fourier, Gauss, box) to compare the influence of the kernel.
+#           Output is interactive and as pfd figure file.
 # Usage:    python plotPiCorr1dStreaksCompare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 23rd September 2019
+# Modified: 24th September 2019
 
 import timeit
 import numpy as np
@@ -25,33 +25,33 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Fourier filtered eFlux', fnam)
 th   = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation DeltaTh
-cthF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+cthF = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read azimuthal correlation with streaks for Gauss filtered eFlux from ascii file
 fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Gauss filtered eFlux', fnam)
-cthG = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+cthG = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read azimuthal correlation with streaks for Box filtered eFlux from ascii file
 fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Box filtered eFlux', fnam)
-cthB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+cthB = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read axial correlation with streaks for Fourier filtered eFlux from ascii file
 fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Fourier filtered eFlux', fnam)
 z   = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation DeltaZ
-czF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+czF = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read axial correlation with streaks for Gauss filtered eFlux from ascii file
 fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Gauss filtered eFlux', fnam)
-czG = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+czG = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read axial correlation with streaks for Box filtered eFlux from ascii file
 fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Box filtered eFlux', fnam)
-czB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
+czB = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 # if you change the last occurence of fnam, also change the string replace for pdf file name below
 
 # grid size
@@ -61,36 +61,36 @@ print('With', nth, 'azimuthal (theta) grid points')
 print('With', nz, 'axial (z) grid points.')
 print('It is your responsibility to make sure, that all data sets are defined on the exact same grid.')
 
+# plotting
 if plot not in [1, 2]: sys.exit() # skip everything below
 print('Creating plot (using LaTeX)...')
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-#from mpl_toolkits.axes_grid1 import make_axes_locatable
-from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from mpl_toolkits.axes_grid1.colorbar import colorbar
-
+#from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+#from mpl_toolkits.axes_grid1.colorbar import colorbar
 mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.preamble'] = [
-r"\usepackage[utf8x]{inputenc}",
+r"\usepackage[utf8]{inputenc}",
 r"\usepackage[T1]{fontenc}",
+r'\usepackage{lmodern, palatino, eulervm}',
+#r'\usepackage{mathptmx}',
 r"\usepackage[detect-all]{siunitx}",
 r'\usepackage{amsmath, amstext, amssymb}',
-r'\usepackage{xfrac}',
-r'\usepackage{lmodern, palatino, eulervm}']
-mpl.rcParams.update({'font.family': 'sans-serif'})
-mpl.rcParams.update({'font.family': 'serif'})
-mpl.rcParams.update({'font.size': 6})
-mpl.rcParams.update({'lines.linewidth': 0.75})
-mpl.rcParams.update({'axes.linewidth': 0.75})
-mpl.rcParams['xtick.major.size'] = 2
-mpl.rcParams['xtick.major.width'] = 0.75
-mpl.rcParams['xtick.minor.size'] = 1
-mpl.rcParams['xtick.minor.width'] = 0.75
-mpl.rcParams['ytick.major.size'] = 2
-mpl.rcParams['ytick.major.width'] = 0.75
-mpl.rcParams['ytick.minor.size'] = 1
-mpl.rcParams['ytick.minor.width'] = 0.75
+r'\usepackage{xfrac}']
+#mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 8})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
 
 # create figure suitable for A4 format
 def mm2inch(*tupl):
@@ -118,12 +118,12 @@ z  =  z * Re_tau
 
 # plot azimuthal cross-correlation
 ax1 = plt.subplot2grid((1, 2), (0, 0), rowspan=1, colspan=1)
-ax1.set_xlabel(r"$\Delta\theta r^+$")
+ax1.set_xlabel(r"$\Delta\theta r^{+}$")
 ax1.set_xlim(left=-200.0, right=200.0)
 ax1.set_xticks([-200.0, -100.0, 0.0, 100.0, 200.0])
 ax1.set_ylabel(r"$C_{u^{\prime}_{z}\Pi}$")
-ax1.set_ylim(bottom=-0.12, top=0.14)
-ax1.set_yticks([-0.1, 0.0, 0.1])
+ax1.set_ylim(bottom=-0.32, top=0.15)
+ax1.set_yticks([-0.3, -0.2, -0.1, 0.0, 0.1])
 ax1.axhline(y=0.0, color=Grey)
 ax1.axvline(x=0.0, color=Grey)
 ax1.plot(th, cthF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
@@ -132,11 +132,11 @@ ax1.plot(th, cthB, color=Blue,       linestyle='-', zorder=9, label=r"Box")
 
 # plot axial cross-correlation
 ax2 = plt.subplot2grid((1, 2), (0, 1), rowspan=1, colspan=1)
-ax2.set_xlabel(r"$\Delta z^+$")
+ax2.set_xlabel(r"$\Delta z^{+}$")
 ax2.set_xlim(left=-1000.0, right=1000.0)
 ax2.set_xticks([-1000.0, -500.0, 0.0, 500.0, 1000.0])
-ax2.set_ylim(bottom=-0.12, top=0.14)
-ax2.set_yticks([-0.1, 0.0, 0.1])
+ax2.set_ylim(bottom=-0.32, top=0.15)
+ax2.set_yticks([-0.3, -0.2, -0.1, 0.0, 0.1])
 ax2.set_yticklabels([])
 ax2.axhline(y=0.0, color=Grey)
 ax2.axvline(x=0.0, color=Grey)
@@ -148,9 +148,9 @@ ax2.legend(loc='lower left', frameon=False, fancybox=False, facecolor=None, edge
 # plot inset/zoom in axial cross-correlation
 from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
 ax3 = plt.axes([0,0,1,1]) # Create a set of inset Axes: these should fill the bounding box allocated to them
-ip = InsetPosition(ax2, [0.55, 0.55, 0.4, 0.4]) # Manually set position and relative size of the inset within ax2
+ip = InsetPosition(ax2, [0.575, 0.725, 0.4, 0.25]) # Manually set position and relative size of the inset within ax2
 ax3.set_axes_locator(ip)
-ax3.set_xlim(left=-20.0, right=20.0)
+ax3.set_xlim(left=-40.0, right=40.0)
 ax3.set_xticks([])
 ax3.set_yticks([])
 ax3.axhline(y=0.0, color=Grey)
