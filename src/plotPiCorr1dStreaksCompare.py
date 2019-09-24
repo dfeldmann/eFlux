@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # Purpose:  Read pre-computed 1d cross-correlations between energy flux and
-#           sweep (Q4) events. Plot azimtuhal (theta) and axial (z) correlation
-#           factors based on different filter kernels (Fourier, Gauss, box) to
-#           compare the influence of the kernel. Output is interactive and as
-#           pfd figure file.
-# Usage:    python plotPiCorr1dQ4Compare.py
+#           streaks. Plot azimtuhal (theta) and axial (z) correlation factors
+#           based on different filter kernels (Fourier, Gauss, box) to compare
+#           the influence of the kernel. Output is interactive and as pfd
+#           figure file.
+# Usage:    python plotPiCorr1dStreaksCompare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
 # Modified: 23rd September 2019
@@ -14,44 +14,44 @@ import numpy as np
 import h5py
 
 # plot mode: (0) none, (1) interactive, (2) pdf
-print('Plot 1d cross-correlations between energy flux and Q4 events based on different kernels.')
+print('Plot 1d cross-correlations between energy flux and streaks based on different kernels.')
 plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 
 # some case parameters
 Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu 
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
-# read azimuthal correlation with inward (Q3) interactions for Fourier filtered eFlux from ascii file
-fnam = 'piCorrThQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
+# read azimuthal correlation with streaks for Fourier filtered eFlux from ascii file
+fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Fourier filtered eFlux', fnam)
 th   = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation DeltaTh
-cthF = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation Q4 with Pi
+cthF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read azimuthal correlation with inward (Q3) interactions for Gauss filtered eFlux from ascii file
-fnam = 'piCorrThQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
+# read azimuthal correlation with streaks for Gauss filtered eFlux from ascii file
+fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Gauss filtered eFlux', fnam)
-cthG = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation Q4 with Pi
+cthG = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read azimuthal correlation with inward (Q3) interactions for Box filtered eFlux from ascii file
-fnam = 'piCorrThQsBox2d_pipe0002_00570000to01675000nt0222.dat'
+# read azimuthal correlation with streaks for Box filtered eFlux from ascii file
+fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading azimuthal correlation for Box filtered eFlux', fnam)
-cthB = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation Q4 with Pi
+cthB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read axial correlation with inward (Q3) interactions for Fourier filtered eFlux from ascii file
-fnam = 'piCorrZQsFourier2d_pipe0002_00570000to01675000nt0222.dat'
+# read axial correlation with streaks for Fourier filtered eFlux from ascii file
+fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Fourier filtered eFlux', fnam)
 z   = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation DeltaZ
-czF = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation Q4 with Pi
+czF = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read axial correlation with inward (Q3) interactions for Gauss filtered eFlux from ascii file
-fnam = 'piCorrZQsGauss2d_pipe0002_00570000to01675000nt0222.dat'
+# read axial correlation with streaks for Gauss filtered eFlux from ascii file
+fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Gauss filtered eFlux', fnam)
-czG = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation Q4 with Pi
+czG = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# read axial correlation with inward (Q3) interactions for Box filtered eFlux from ascii file
-fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
+# read axial correlation with streaks for Box filtered eFlux from ascii file
+fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading axial correlation for Box filtered eFlux', fnam)
-czB = np.loadtxt(fnam)[:, 9] # 10th column: Cross-correlation Q4 with Pi
+czB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 # if you change the last occurence of fnam, also change the string replace for pdf file name below
 
 # grid size
@@ -116,34 +116,49 @@ Grey          = '#999999'
 th = th * Re_tau
 z  =  z * Re_tau
 
-# plot first order statistics
+# plot azimuthal cross-correlation
 ax1 = plt.subplot2grid((1, 2), (0, 0), rowspan=1, colspan=1)
 ax1.set_xlabel(r"$\Delta\theta r^+$")
 ax1.set_xlim(left=-200.0, right=200.0)
 ax1.set_xticks([-200.0, -100.0, 0.0, 100.0, 200.0])
-ax1.set_ylabel(r"$C_{\Pi Q_4}$")
-ax1.set_ylim(bottom=-0.33, top=0.11)
-ax1.set_yticks([-0.3, -0.2, -0.1, 0.0, 0.1])
+ax1.set_ylabel(r"$C_{u^{\prime}_{z}\Pi}$")
+ax1.set_ylim(bottom=-0.12, top=0.14)
+ax1.set_yticks([-0.1, 0.0, 0.1])
 ax1.axhline(y=0.0, color=Grey)
 ax1.axvline(x=0.0, color=Grey)
 ax1.plot(th, cthF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax1.plot(th, cthG, color=Vermillion, linestyle='-', zorder=8, label=r"Gauss")
 ax1.plot(th, cthB, color=Blue,       linestyle='-', zorder=9, label=r"Box")
 
-# plot second order statistics
+# plot axial cross-correlation
 ax2 = plt.subplot2grid((1, 2), (0, 1), rowspan=1, colspan=1)
 ax2.set_xlabel(r"$\Delta z^+$")
 ax2.set_xlim(left=-1000.0, right=1000.0)
 ax2.set_xticks([-1000.0, -500.0, 0.0, 500.0, 1000.0])
-ax2.set_ylim(bottom=-0.33, top=0.11)
-ax2.set_yticks([-0.3, -0.2, -0.1, 0.0, 0.1])
+ax2.set_ylim(bottom=-0.12, top=0.14)
+ax2.set_yticks([-0.1, 0.0, 0.1])
 ax2.set_yticklabels([])
 ax2.axhline(y=0.0, color=Grey)
 ax2.axvline(x=0.0, color=Grey)
 ax2.plot(z, czF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax2.plot(z, czG, color=Vermillion, linestyle='-', zorder=8, label=r"Gauss")
 ax2.plot(z, czB, color=Blue,       linestyle='-', zorder=9, label=r"Box")
-ax2.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax2.legend(loc='lower left', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+
+# plot inset/zoom in axial cross-correlation
+from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
+ax3 = plt.axes([0,0,1,1]) # Create a set of inset Axes: these should fill the bounding box allocated to them
+ip = InsetPosition(ax2, [0.55, 0.55, 0.4, 0.4]) # Manually set position and relative size of the inset within ax2
+ax3.set_axes_locator(ip)
+ax3.set_xlim(left=-20.0, right=20.0)
+ax3.set_xticks([])
+ax3.set_yticks([])
+ax3.axhline(y=0.0, color=Grey)
+ax3.axvline(x=0.0, color=Grey)
+ax3.plot(z, czF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
+ax3.plot(z, czG, color=Vermillion, linestyle='-', zorder=8, label=r"Gauss")
+ax3.plot(z, czB, color=Blue,       linestyle='-', zorder=9, label=r"Box")
+#mark_inset(ax2, ax3, loc1=3, loc2=1, fc="none", ec='0.5') # Mark the region corresponding to the inset
 
 # plot mode interactive or pdf
 if plot == 1:
@@ -152,7 +167,7 @@ if plot == 1:
 else:
  fig.tight_layout()
  fnam = str.replace(fnam, '.dat', '.pdf')
- fnam = str.replace(fnam, 'piCorrZQsBox2d', 'plotPiCorr1dQ4Compare')
+ fnam = str.replace(fnam, 'piCorrZStreaksBox2d', 'plotPiCorr1dStreaksCompare')
  plt.savefig(fnam)
  print('Written file', fnam)
 fig.clf()
