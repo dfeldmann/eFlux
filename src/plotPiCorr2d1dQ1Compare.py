@@ -23,7 +23,7 @@ print('Plot 1d and 2d cross-correlations between energy flux and Q1 (outward) in
 plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 
 # some case parameters
-Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu 
+Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
 # read 1d azimuthal cross-correlation with Q1 events for Fourier filtered eFlux from ascii file
@@ -58,7 +58,7 @@ fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 pqzB = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation Q1 with Pi
 
-# grid size, manual hack (TODO: read this from header info of piCorrThZ*.dat) 
+# grid size, manual hack (TODO: read this from header info of piCorrThZ*.dat)
 nth = len(th1d) # 385  # azimuthal grid points
 nz  = len(z1d)  # 2305 # axial grid points
 print('With', nth, 'azimuthal (th) points')
@@ -93,7 +93,7 @@ DeltaZ  = np.zeros(nz)
 ccF = np.zeros((nth, nz))
 ccG = np.zeros((nth, nz))
 ccB = np.zeros((nth, nz))
-for i in range(nth): 
+for i in range(nth):
  for j in range(nz):
   DeltaTh[i] = Dt[i*(nz)+j]
   DeltaZ[j]  = Dz[i*(nz)+j]
@@ -152,8 +152,8 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False) 
-fig = plt.figure(num=None, dpi=100, constrained_layout=False) 
+#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False)
+fig = plt.figure(num=None, dpi=100, constrained_layout=False)
 
 # conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
 Vermillion    = '#D55E00'
@@ -165,7 +165,7 @@ ReddishPurple = '#CC79A7'
 Yellow        = '#F0E442'
 Grey          = '#999999'
 Black         = '#000000'
-exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
+exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
 # modify box for filter name annotation and sub figure label
@@ -274,9 +274,6 @@ ax6.plot(z1d, pqzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax6.plot(z1d, pqzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
 ax6.plot(z1d, pqzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
 #mark_inset(ax2, ax3, loc1=3, loc2=1, fc="none", ec='0.5') # Mark the region corresponding to the inset
-
-
-
 
 # add this for consistent representation of images in ax1 to ax3
 # ax1.set_aspect('equal')
