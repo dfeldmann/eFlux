@@ -23,7 +23,7 @@ print('Plot 1d and 2d cross-correlations between energy flux and Q2 (ejection) e
 plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 
 # some case parameters
-Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu 
+Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
 # read 1d azimuthal cross-correlation with Q2 events for Fourier filtered eFlux from ascii file
@@ -58,9 +58,9 @@ fnam = 'piCorrZQsBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 pqzB = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation Q2 with Pi
 
-# grid size, manual hack (TODO: read this from header info of piCorrThZ*.dat) 
+# grid size, manual hack (TODO: read this from header info of piCorrThZ*.dat)
 nth = len(th1d) # 385  # azimuthal grid points
-nz  =  2305 #len(z1d)  # axial grid points
+nz  = len(z1d)  # 2305 # axial grid points
 print('With', nth, 'azimuthal (th) points')
 print('With', nz, 'axial (z) points')
 print('It is your responsibility to make sure that the 2d correlations are defined on the exact same grid.')
@@ -93,7 +93,7 @@ DeltaZ  = np.zeros(nz)
 ccF = np.zeros((nth, nz))
 ccG = np.zeros((nth, nz))
 ccB = np.zeros((nth, nz))
-for i in range(nth): 
+for i in range(nth):
  for j in range(nz):
   DeltaTh[i] = Dt[i*(nz)+j]
   DeltaZ[j]  = Dz[i*(nz)+j]
@@ -152,8 +152,8 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False) 
-fig = plt.figure(num=None, dpi=100, constrained_layout=False) 
+#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False)
+fig = plt.figure(num=None, dpi=100, constrained_layout=False)
 
 # conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
 Vermillion    = '#D55E00'
@@ -165,7 +165,7 @@ ReddishPurple = '#CC79A7'
 Yellow        = '#F0E442'
 Grey          = '#999999'
 Black         = '#000000'
-exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
+exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
 # modify box for filter name annotation and sub figure label
@@ -240,7 +240,9 @@ ax4.axvline(x=0.0, color=Grey)
 ax4.plot(pqthF, th1d, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax4.plot(pqthG, th1d, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
 ax4.plot(pqthB, th1d, color=Blue,       linestyle='-', zorder=8, label=r"Box")
-ax4.text(0.03, 0.9, r"d)", ha="left", va="top", transform=ax4.transAxes) #, rotation=0, bbox=labelBox)
+#ax4.legend(bbox_to_anchor=(-0.02, 0.0), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax4.legend(loc='upper center', bbox_to_anchor=(0.55, -0.4), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax4.text(0.11, 0.9, r"d)", ha="left", va="top", transform=ax4.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 1d axial cross-correlation at the bottom
 ax5 = fig.add_subplot(gs[3,0], sharex = ax1)
@@ -253,11 +255,25 @@ ax5.set_ylim(bottom=-0.15, top=0.15)
 ax5.set_yticks([-0.15, 0.0, 0.15])
 ax5.axhline(y=0.0, color=Grey)
 ax5.axvline(x=0.0, color=Grey)
-#ax5.plot(z1d, pqzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
-#ax5.plot(z1d, pqzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
-#ax5.plot(z1d, pqzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
-ax5.legend(bbox_to_anchor=(1.247, 0.6125), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax5.plot(z1d, pqzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
+ax5.plot(z1d, pqzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
+ax5.plot(z1d, pqzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
 ax5.text(0.02, 0.9, r"e)", ha="left", va="top", transform=ax5.transAxes) #, rotation=0, bbox=labelBox)
+
+# plot inset/zoom in 1d axial cross-correlation
+from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
+ax6 = plt.axes([0,0,1,1]) # Create a set of inset Axes: these should fill the bounding box allocated to them
+ip = InsetPosition(ax5, [0.64, 0.10, 0.25, 0.80]) # Manually set position and relative size of the inset within original ax5
+ax6.set_axes_locator(ip)
+ax6.set_xlim(left=-15.0, right=15.0) # where to zoom in?
+ax6.set_xticks([])
+ax6.set_yticks([])
+ax6.axhline(y=0.0, color=Grey)
+ax6.axvline(x=0.0, color=Grey)
+ax6.plot(z1d, pqzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
+ax6.plot(z1d, pqzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
+ax6.plot(z1d, pqzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
+#mark_inset(ax2, ax3, loc1=3, loc2=1, fc="none", ec='0.5') # Mark the region corresponding to the inset
 
 # add this for consistent representation of images in ax1 to ax3
 # ax1.set_aspect('equal')
@@ -270,7 +286,7 @@ ax3.set_aspect('auto')
 
 # plot common colour bar
 axc = plt.axes([0.76, 0.515, 0.035, 0.355])
-fmt = FormatStrFormatter('%4.1f')
+fmt = FormatStrFormatter('%4.2f')
 cb1 = plt.colorbar(im1, cax=axc, format=fmt, orientation="vertical")
 cb1.ax.set_ylabel(r"$C_{Q_{2}\Pi}$")
 cb1.set_ticks([-amcc, 0.0, +amcc])
