@@ -146,7 +146,7 @@ piFlat = (pi4 - 4.0*pi3*pi1 + 6.0*pi2*pi1**2 - 3.0*pi1**4) / piRms**4
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
 # write 1d one-point statistics to ascii file
-fnam = 'piStatBox2d'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
+fnam = 'piStatBox2d_pipe0002'+'{:08d}'.format(iFirst)+'to'+'{:08d}'.format(iLast)+'nt'+'{:04d}'.format(nt)+'.dat'
 f = open(fnam, 'w')
 f.write("# One-dimensional one-point statistics (mean, RMS, skewness and flatness factors)\n")
 f.write("# For the inter-scale energy flux (Pi) across scale lambda\n")
