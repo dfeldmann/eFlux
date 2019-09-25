@@ -12,12 +12,9 @@
 # Usage:    python plotPiCorr2d1dStreaksCompare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 19th September 2019
+# Modified: 24th September 2019
 
-import sys
-import os.path
 import timeit
-import math
 import numpy as np
 import h5py
 
@@ -26,64 +23,67 @@ print('Plot 1d and 2d cross-correlations between energy flux and streaks based o
 plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 
 # some case parameters
-Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu 
+Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
-# read 1d axial cross-correlation with streaks for Fourier filtered eFlux from ascii file
-fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading 1d cross-correlation from', fnam)
-z1d  = np.loadtxt(fnam)[:, 0] # 1st column: axial separation, only once
-puzF = np.loadtxt(fnam)[:, 1] # 2nd column: UzPi correlation
-
 # read 1d azimuthal cross-correlation with streaks for Fourier filtered eFlux from ascii file
-fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to01265000nt0140.dat'
+fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
-th1d  = np.loadtxt(fnam)[:, 0] # 1st column: azimuthal separation, only once
-puthF = np.loadtxt(fnam)[:, 1] # 2nd column: UzPi correlaation
-
-# read 1d axial cross-correlation with streaks for Gauss filtered eFlux from ascii file
-fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading 1d cross-correlation from', fnam)
-puzG = np.loadtxt(fnam)[:, 1] # 2nd column: UzPi correlation
+th1d  = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation, only once
+puthF = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read 1d azimuthal cross-correlation with streaks for Gauss filtered eFlux from ascii file
-fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to01265000nt0140.dat'
+fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
-puthG = np.loadtxt(fnam)[:, 1] # 2nd column: UzPi correlaation
-
-# read 1d axial cross-correlation with streaks for box filtered eFlux from ascii file
-fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to01265000nt0140.dat'
-print('Reading 1d cross-correlation from', fnam)
-puzB = np.loadtxt(fnam)[:, 1] # 2nd column: UzPi correlation
+puthG = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
 
 # read 1d azimuthal cross-correlation with streaks for box filtered eFlux from ascii file
-fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to01265000nt0140.dat'
+fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
-puthB = np.loadtxt(fnam)[:, 1] # 2nd column: UzPi correlaation
+puthB = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
+
+# read 1d axial cross-correlation with streaks for Fourier filtered eFlux from ascii file
+fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading 1d cross-correlation from', fnam)
+z1d  = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation, only once
+puzF = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
+
+# read 1d axial cross-correlation with streaks for Gauss filtered eFlux from ascii file
+fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading 1d cross-correlation from', fnam)
+puzG = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
+
+# read 1d axial cross-correlation with streaks for box filtered eFlux from ascii file
+fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
+print('Reading 1d cross-correlation from', fnam)
+puzB = np.loadtxt(fnam)[:, 5] # 6th column: Cross-correlation u'_z with Pi
+
+# grid size, manual hack (TODO: read this from header info of piCorrThZ*.dat)
+nth = len(th1d) # 385  # azimuthal grid points
+nz  = len(z1d)  # 2305 # axial grid points
+print('With', nth, 'azimuthal (th) points')
+print('With', nz, 'axial (z) points')
+print('It is your responsibility to make sure that the 2d correlations are defined on the exact same grid.')
 
 # read 2d cross-correlation between eFlux and streaks for Fourier filter from ascii file
-fnam = 'piCorrThZStreaksFourier2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThZStreaksFourier2d_pipe0002_00570000to01265000nt0140.dat'
 fnam = 'piCorrThZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
-print('Reading 2d cross-correlations from', fnam)
+print('Reading 2d cross-correlation from', fnam)
 Dt = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal displacement
 Dz = np.loadtxt(fnam)[:, 1] # 2nd column: Axial displacement
-f  = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation for u'_z and Pi
+f  = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation u'_z with Pi
 
 # read 2d cross-correlation between eFlux and streaks for Gauss filter from ascii file
-fnam = 'piCorrThZStreaksGauss2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThZStreaksGauss2d_pipe0002_00570000to01265000nt0140.dat'
 fnam = 'piCorrThZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
-print('Reading 2d cross-correlations from', fnam)
-g = np.loadtxt(fnam)[:, 6]
+print('Reading 2d cross-correlation from', fnam)
+g = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation u'_z with Pi
 
 # read 2d cross-correlation between eFlux and streaks for box filter from ascii file
-fnam = 'piCorrThZStreaksBox2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThZStreaksBox2d_pipe0002_00570000to01265000nt0140.dat'
 fnam = 'piCorrThZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
-print('Reading 2d cross-correlations from', fnam)
-b = np.loadtxt(fnam)[:, 6]
-
-# manual hack (TODO: read this from header info of piCorrThZ*.dat) 
-nth = 385  # azimuthal points
-nz  = 2305 # axial points
+print('Reading 2d cross-correlation from', fnam)
+b = np.loadtxt(fnam)[:, 6] # 7th column: Cross-correlation u'_z with Pi
 
 # re-cast cross-correlation data into 2d array for plotting
 # (TODO: this is straight-forward fortran programming style and can maybe be done much more efficiently in Python...?)
@@ -93,7 +93,7 @@ DeltaZ  = np.zeros(nz)
 ccF = np.zeros((nth, nz))
 ccG = np.zeros((nth, nz))
 ccB = np.zeros((nth, nz))
-for i in range(nth): 
+for i in range(nth):
  for j in range(nz):
   DeltaTh[i] = Dt[i*(nz)+j]
   DeltaZ[j]  = Dz[i*(nz)+j]
@@ -152,8 +152,8 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False) 
-fig = plt.figure(num=None, dpi=100, constrained_layout=False) 
+#fig = plt.figure(num=None, figsize=mm2inch(134.0, 150.0), dpi=300, constrained_layout=False)
+fig = plt.figure(num=None, dpi=100, constrained_layout=False)
 
 # conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
 Vermillion    = '#D55E00'
@@ -165,7 +165,7 @@ ReddishPurple = '#CC79A7'
 Yellow        = '#F0E442'
 Grey          = '#999999'
 Black         = '#000000'
-exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
+exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
 # modify box for filter name annotation and sub figure label
@@ -196,8 +196,8 @@ ax1.minorticks_on()
 im1 = ax1.imshow(ccF, vmin=-amcc, vmax=+amcc, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
 cl1n = ax1.contour(DeltaZ, DeltaTh, ccF, levels=[-clm], colors=Vermillion, linestyles='-', linewidths=0.5)
 cl1p = ax1.contour(DeltaZ, DeltaTh, ccF, levels=[+clm], colors=Blue, linestyles='-', linewidths=0.5)
-ax1.text(-750.0, -130.0, r"Fourier", ha="left", va="bottom", rotation=0, bbox=filterBox)
-ax1.text(-765.0,  145.0, r"a)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax1.text(0.98, 0.9, r"Fourier", ha="right", va="top", transform=ax1.transAxes, rotation=0, bbox=filterBox)
+ax1.text(0.02, 0.9, r"a)", ha="left", va="top", transform=ax1.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 2d correlation map for Gauss eFlux
 ax2 = fig.add_subplot(gs[1,0], sharex=ax1)
@@ -210,8 +210,8 @@ ax2.minorticks_on()
 im2 = ax2.imshow(ccG, vmin=-amcc, vmax=+amcc, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
 cl2n = ax2.contour(DeltaZ, DeltaTh, ccG, levels=[-clm], colors=Vermillion, linestyles='-', linewidths=0.5)
 cl2p = ax2.contour(DeltaZ, DeltaTh, ccG, levels=[+clm], colors=Blue, linestyles='-', linewidths=0.5)
-ax2.text(-750.0, -130.0, r"Gauss", ha="left", va="bottom", rotation=0, bbox=filterBox)
-ax2.text(-765.0,  145.0, r"b)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax2.text(0.98, 0.9, r"Gauss", ha="right", va="top", transform=ax2.transAxes, rotation=0, bbox=filterBox)
+ax2.text(0.02, 0.9, r"b)", ha="left", va="top", transform=ax2.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 2d correlation map for box eFlux
 ax3 = fig.add_subplot(gs[2,0], sharex=ax1)
@@ -224,8 +224,8 @@ ax3.minorticks_on()
 im3 = ax3.imshow(ccB, vmin=-amcc, vmax=+amcc, cmap=VermBlue, interpolation='bilinear', extent=[np.min(DeltaZ), np.max(DeltaZ), np.min(DeltaTh), np.max(DeltaTh)], origin='lower')
 cl3n = ax3.contour(DeltaZ, DeltaTh, ccB, levels=[-clm], colors=Vermillion, linestyles='-', linewidths=0.5)
 cl3p = ax3.contour(DeltaZ, DeltaTh, ccB, levels=[+clm], colors=Blue, linestyles='-', linewidths=0.5)
-ax3.text(-750.0, -130.0, r"Box", ha="left", va="bottom", rotation=0, bbox=filterBox)
-ax3.text(-765.0,  145.0, r"c)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax3.text(0.98, 0.9, r"Box", ha="right", va="top", transform=ax3.transAxes, rotation=0, bbox=filterBox)
+ax3.text(0.02, 0.9, r"c)", ha="left", va="top", transform=ax3.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 1d azimuthal cross-correlation on the right
 ax4 = fig.add_subplot(gs[2,1], sharey = ax3)
@@ -239,7 +239,9 @@ ax4.axvline(x=0.0, color=Grey)
 ax4.plot(puthF, th1d, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax4.plot(puthG, th1d, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
 ax4.plot(puthB, th1d, color=Blue,       linestyle='-', zorder=8, label=r"Box")
-ax4.text(-0.19, 145.0, r"d)", ha="left", va="top", rotation=0, bbox=labelBox)
+#ax4.legend(bbox_to_anchor=(-0.02, 0.0), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax4.legend(loc='upper center', bbox_to_anchor=(0.55, -0.4), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax4.text(0.11, 0.9, r"d)", ha="left", va="top", transform=ax4.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot 1d axial cross-correlation at the bottom
 ax5 = fig.add_subplot(gs[3,0], sharex = ax1)
@@ -254,8 +256,22 @@ ax5.axvline(x=0.0, color=Grey)
 ax5.plot(z1d, puzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
 ax5.plot(z1d, puzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
 ax5.plot(z1d, puzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
-ax5.legend(bbox_to_anchor=(1.247, 0.6125), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
-ax5.text(-765.0, 0.07, r"e)", ha="left", va="top", rotation=0, bbox=labelBox)
+ax5.text(0.02, 0.9, r"e)", ha="left", va="top", transform=ax5.transAxes) #, rotation=0, bbox=labelBox)
+
+# plot inset/zoom in 1d axial cross-correlation
+from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
+ax6 = plt.axes([0,0,1,1]) # Create a set of inset Axes: these should fill the bounding box allocated to them
+ip = InsetPosition(ax5, [0.02, 0.05, 0.20, 0.60]) # Manually set position and relative size of the inset within original ax5
+ax6.set_axes_locator(ip)
+ax6.set_xlim(left=-15.0, right=15.0) # where to zoom in?
+ax6.set_xticks([])
+ax6.set_yticks([])
+ax6.axhline(y=0.0, color=Grey)
+ax6.axvline(x=0.0, color=Grey)
+ax6.plot(z1d, puzF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
+ax6.plot(z1d, puzG, color=Vermillion, linestyle='-', zorder=9, label=r"Gauss")
+ax6.plot(z1d, puzB, color=Blue,       linestyle='-', zorder=8, label=r"Box")
+#mark_inset(ax2, ax3, loc1=3, loc2=1, fc="none", ec='0.5') # Mark the region corresponding to the inset
 
 # add this for consistent representation of images in ax1 to ax3
 # ax1.set_aspect('equal')
