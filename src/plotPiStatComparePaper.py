@@ -131,7 +131,7 @@ ax3 = plt.subplot(gs[2])
 ax4 = plt.subplot(gs[3])
 
 # plot first order statistics
-ax1.set_xlabel(r"$\langle\Pi\rangle$ in $U^3_{\text{HP}}R^2$")
+ax1.set_xlabel(r"$\langle\Pi\rangle$ in $U^3_{c}R^2$")
 #ax1.set_xlim(bottom=-0.010, top=0.035)
 ax1.set_ylabel(r"$y^{+}$ in $\sfrac{\nu}{u_{\tau}}$")
 ax1.set_yscale('log')
@@ -144,7 +144,7 @@ ax1.plot(    eFMeanBox[:-2]*fpi, yp[:-2], color=Blue,       linestyle='-',  zord
 ax1.text(0.96, 0.96, r"a)", ha="right", va="top", transform=ax1.transAxes) #, rotation=0, bbox=labelBox)
 
 # plot second order statistics
-ax2.set_xlabel(r"$\langle\Pi^{\prime 2}\rangle^{\sfrac{1}{2}}$ in $U^3_{\text{HP}}R^2$")
+ax2.set_xlabel(r"$\langle\Pi^{\prime 2}\rangle^{\sfrac{1}{2}}$ in $U^3_{c}R^2$")
 #ax2.set_xlim(left=0.0)
 ax2.set_yscale('log')
 ax2.set_ylim(bottom=3.0e-1, top=Re_tau)
