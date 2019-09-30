@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # Purpose:  Read pre-computed instantaneous 3d energy flux fields from HDF5 file
-#           based on a Box filter kernel. Read axial velocity data from the
+#           based on a box filter kernel. Read axial velocity data from the
 #           corresponding HDF5 file. Read statistically steady mean profile from
-#           ascii file to compute fluctuating velocity field. Extract 2di data
+#           ascii file to compute fluctuating velocity field. Extract 2d data
 #           sets in a wall-parallel plane and energy flux contours in top of the
 #           axial velocity field to visualise the connection between eflux and
 #           high-speed and low-speed streaks. Output is interactive or as pfd
@@ -17,7 +17,7 @@ import numpy as np
 import h5py
 
 # plot mode: (0) none, (1) interactive, (2) pdf
-print('Plot instantaneous energy flux on top of streaks in a wall-parallel plane for a Box filter')
+print('Plot instantaneous energy flux on top of streaks in a wall-parallel plane for a box filter')
 plot = int(input("Enter plot mode (0 = none, 1 = interactive, 2 = pdf file): "))
 
 # some case parameters
@@ -43,7 +43,7 @@ uzM = np.loadtxt(fnam)[:, 3]
 # subtract mean velocity profiles (1d) from flow field (3d)
 uz = uz - np.tile(uzM, (len(z), len(th), 1)).T
 
-# read Box energy flux field from file
+# read box energy flux field from file
 fnam = 'piFieldBox2d_pipe0002_01675000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading eflux from file", fnam)
@@ -141,7 +141,7 @@ z = z * Re_tau
 # modify box for filter name annotation
 filterBox = dict(boxstyle="square, pad=0.3", fc='w', ec=Black, lw=0.5)
 
-# plot Box eFlux
+# plot box eFlux
 ax1 = plt.subplot2grid((1, 1), (0, 0), rowspan=1, colspan=1)
 ax1.set_xlabel(r"$z^+$")
 ax1.set_xlim([0.0, 1800.0])

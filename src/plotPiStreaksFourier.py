@@ -2,7 +2,7 @@
 # Purpose:  Read pre-computed instantaneous 3d energy flux fields from HDF5 file
 #           based on a Fourier filter kernel. Read axial velocity data from the
 #           corresponding HDF5 file. Read statistically steady mean profile from
-#           ascii file to compute fluctuating velocity field. Extract 2di data
+#           ascii file to compute fluctuating velocity field. Extract 2d data
 #           sets in a wall-parallel plane and energy flux contours in top of the
 #           axial velocity field to visualise the connection between eflux and
 #           high-speed and low-speed streaks. Output is interactive or as pfd
@@ -10,12 +10,9 @@
 # Usage:    python plotPiStreaksFourier.py 
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 22nd August 2019
+# Modified: 30th September 2019
 
-import sys
-import os.path
 import timeit
-import math
 import numpy as np
 import h5py
 
@@ -76,36 +73,36 @@ uz = uz[k, :, :]
 print("Plane max/min eFlux:", np.max(pi), np.min(pi))
 print("Plane max/min u'_z: ", np.max(uz), np.min(uz))
 
+# plotting
 if plot not in [1, 2]: sys.exit() # skip everything below
 print('Creating plot (using LaTeX)...')
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-#from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from mpl_toolkits.axes_grid1.colorbar import colorbar
-
+#from mpl_toolkits.axes_grid1.colorbar import colorbar
 mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.preamble'] = [
-r"\usepackage[utf8x]{inputenc}",
+r"\usepackage[utf8]{inputenc}",
 r"\usepackage[T1]{fontenc}",
+r'\usepackage{lmodern, palatino, eulervm}',
+#r'\usepackage{mathptmx}',
 r"\usepackage[detect-all]{siunitx}",
 r'\usepackage{amsmath, amstext, amssymb}',
-r'\usepackage{xfrac}',
-r'\usepackage{lmodern, palatino, eulervm}']
-mpl.rcParams.update({'font.family': 'sans-serif'})
-mpl.rcParams.update({'font.family': 'serif'})
-mpl.rcParams.update({'font.size': 5})
-mpl.rcParams.update({'lines.linewidth': 0.5})
-mpl.rcParams.update({'axes.linewidth': 0.5})
-mpl.rcParams['xtick.major.size'] = 2
-mpl.rcParams['xtick.major.width'] = 0.5
-mpl.rcParams['xtick.minor.size'] = 1
-mpl.rcParams['xtick.minor.width'] = 0.5
-mpl.rcParams['ytick.major.size'] = 2
-mpl.rcParams['ytick.major.width'] = 0.5
-mpl.rcParams['ytick.minor.size'] = 1
-mpl.rcParams['ytick.minor.width'] = 0.5
+r'\usepackage{xfrac}']
+#mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 7})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
 
 # create figure suitable for A4 format
 def mm2inch(*tupl):
@@ -114,7 +111,8 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-fig = plt.figure(num=None, figsize=mm2inch(110.0, 45.0), dpi=300)
+#fig = plt.figure(num=None, figsize=mm2inch(110.0, 45.0), dpi=300)
+fig = plt.figure(num=None, dpi=300)
 
 # conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
 Vermillion    = '#D55E00'
@@ -125,6 +123,7 @@ SkyBlue       = '#56B4E9'
 ReddishPurple = '#CC79A7'
 Yellow        = '#F0E442'
 Black         = '#000000'
+Grey          = '#999999'
 exec(open("./colourMaps.py").read()) # 
 VermBlue = CBWcm['VeBu']             # Vermillion (-) White (0) Blue (+)
 
@@ -158,14 +157,13 @@ t1 = ax1.text(1750.0, 550.0, r"Fourier", ha="right", va="top", rotation=0, bbox=
 # plot colour bar
 axd = make_axes_locatable(ax1) # divider
 axc = axd.append_axes("right", size=0.10, pad=0.05) # add an axes right of the main axes
-fmt = FormatStrFormatter('%6.3f')
+fmt = FormatStrFormatter('%6.2f')
 cb1 = plt.colorbar(im1, cax=axc, orientation='vertical', format=fmt)
 cb1.set_label(r"$\Pi$ in $U^{3}_{c}R^{2}$")
 cb1.set_ticks([-ampi, 0.000, +ampi])
 cb1.set_ticks([-ampi, clm, 0.000, -clm, +ampi]) # tweak colour bar ticks to show manual countour level
 cb1.set_label(r"$u^{\prime}_{z}$ in $U_{c}$")
 cb1.set_ticks([-amuz, 0.000, +amuz])
-# axc.xaxis.set_ticks_position("top") # Tick position defaults to bottom and might overlap the image
 
 # plot mode interactive or pdf
 if plot != 2:
