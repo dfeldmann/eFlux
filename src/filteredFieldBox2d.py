@@ -101,7 +101,7 @@ for iFile in iFiles:
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t1), 'seconds')
 
     # store result as individual HDF5 file
-    fnam = 'filteredfieldBox2d_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
+    fnam = 'filteredFieldBox2d_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     out = h5py.File(fnam, 'w') # open HDF5 file for writing
     fields = out.create_group("fields")
     scale = out.create_group("scale")
