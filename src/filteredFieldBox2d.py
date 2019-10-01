@@ -25,7 +25,7 @@ iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
-print('Compute filtered flow field for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
+print('Compute filtered flow field (box) for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
 # path to data files (do modify)
 fpath = '../../outFiles/'
@@ -88,7 +88,7 @@ for iFile in iFiles:
     print(' with data structure u', u_z.shape)
 
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z  = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
+    u_z  = u_z - np.tile(u_zM, (nz, nth, 1)).T
 
     # filter velocity field
     print('Filtering velocity components and pressure... ', end='', flush=True)
@@ -149,7 +149,7 @@ for iFile in iFiles:
 
     topology=ET.SubElement(grid,'Topology')#('''<root><Topology ToplogyType="3DRectMesh" /></root>''')#ET.SubElement
     topology.set("TopologyType","3DRectMesh")
-    topology.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    topology.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
 
     grid.extend(topology)
     grid.set("Name", "mesh")
@@ -159,7 +159,7 @@ for iFile in iFiles:
     geometry.set("GeometryType","VXVYVZ")
 
     dataItemTh=ET.SubElement(geometry, "DataItem")
-    dataItemTh.set("Dimensions",str(len(th)))
+    dataItemTh.set("Dimensions",str(nth))
     dataItemTh.set("Name", "th")
     dataItemTh.set("NumberType", "Float")
     dataItemTh.set("Precision", "8")
@@ -167,7 +167,7 @@ for iFile in iFiles:
     dataItemTh.text = fnam+":/grid/th"
 
     dataItemZ=ET.SubElement(geometry, "DataItem")
-    dataItemZ.set("Dimensions",str(len(z)))
+    dataItemZ.set("Dimensions",str(nz))
     dataItemZ.set("Name", "z")
     dataItemZ.set("NumberType", "Float")
     dataItemZ.set("Precision", "8")
@@ -175,7 +175,7 @@ for iFile in iFiles:
     dataItemZ.text = fnam+":/grid/z"
 
     dataItemR=ET.SubElement(geometry, "DataItem")
-    dataItemR.set("Dimensions",str(len(r)))
+    dataItemR.set("Dimensions",str(nr))
     dataItemR.set("Name", "r")
     dataItemR.set("NumberType", "Float")
     dataItemR.set("Precision", "8")
@@ -191,7 +191,7 @@ for iFile in iFiles:
     attributeU_rF.set("AttributeType", "Scalar")
     attributeU_rF.set("Center","Node")
     dataItemU_rF=ET.SubElement(attributeU_rF, "DataItem")
-    dataItemU_rF.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemU_rF.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemU_rF.set("NumberType", "Float")
     dataItemU_rF.set("Precision", "8")
     dataItemU_rF.set("Format", "HDF")
@@ -202,7 +202,7 @@ for iFile in iFiles:
     attributeU_thF.set("AttributeType", "Scalar")
     attributeU_thF.set("Center","Node")
     dataItemU_thF=ET.SubElement(attributeU_thF, "DataItem")
-    dataItemU_thF.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemU_thF.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemU_thF.set("NumberType", "Float")
     dataItemU_thF.set("Precision", "8")
     dataItemU_thF.set("Format", "HDF")
@@ -213,7 +213,7 @@ for iFile in iFiles:
     attributeU_zF.set("AttributeType", "Scalar")
     attributeU_zF.set("Center","Node")
     dataItemU_zF=ET.SubElement(attributeU_zF, "DataItem")
-    dataItemU_zF.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemU_zF.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemU_zF.set("NumberType", "Float")
     dataItemU_zF.set("Precision", "8")
     dataItemU_zF.set("Format", "HDF")
@@ -224,7 +224,7 @@ for iFile in iFiles:
     attributeU_z.set("AttributeType", "Scalar")
     attributeU_z.set("Center","Node")
     dataItemU_z=ET.SubElement(attributeU_z, "DataItem")
-    dataItemU_z.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemU_z.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemU_z.set("NumberType", "Float")
     dataItemU_z.set("Precision", "8")
     dataItemU_z.set("Format", "HDF")
@@ -235,7 +235,7 @@ for iFile in iFiles:
     attributePF.set("AttributeType", "Scalar")
     attributePF.set("Center","Node")
     dataItemPF=ET.SubElement(attributePF, "DataItem")
-    dataItemPF.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemPF.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemPF.set("NumberType", "Float")
     dataItemPF.set("Precision", "8")
     dataItemPF.set("Format", "HDF")
@@ -248,27 +248,27 @@ for iFile in iFiles:
 
     dataItemVelocityFFunction=ET.SubElement(attributeVelocityF, "DataItem")
     dataItemVelocityFFunction.set("ItemType", "Function")
-    dataItemVelocityFFunction.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th))+" 3")
+    dataItemVelocityFFunction.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth)+" 3")
     dataItemVelocityFFunction.set("Function","JOIN($0, $1, $2)")
 
     attributeVelocityF.set("Center","Node")
 
     dataItemVelocityFR=ET.SubElement(dataItemVelocityFFunction, "DataItem")
-    dataItemVelocityFR.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemVelocityFR.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemVelocityFR.set("NumberType", "Float")
     dataItemVelocityFR.set("Precision", "8")
     dataItemVelocityFR.set("Format", "HDF")
     dataItemVelocityFR.text = fnam+":/fields/velocity/u_rF"
 
     dataItemVelocityFTh=ET.SubElement(dataItemVelocityFFunction, "DataItem")
-    dataItemVelocityFTh.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemVelocityFTh.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemVelocityFTh.set("NumberType", "Float")
     dataItemVelocityFTh.set("Precision", "8")
     dataItemVelocityFTh.set("Format", "HDF")
     dataItemVelocityFTh.text = fnam+":/fields/velocity/u_thF"
 
     dataItemVelocityFZ=ET.SubElement(dataItemVelocityFFunction, "DataItem")
-    dataItemVelocityFZ.set("Dimensions",str(len(r))+" "+str(len(z))+" "+str(len(th)))
+    dataItemVelocityFZ.set("Dimensions",str(nr)+" "+str(nz)+" "+str(nth))
     dataItemVelocityFZ.set("NumberType", "Float")
     dataItemVelocityFZ.set("Precision", "8")
     dataItemVelocityFZ.set("Format", "HDF")
