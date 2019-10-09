@@ -1,4 +1,4 @@
-# This very cool peace of Python code was taken from github.com/nesanders/colorblind-colormap
+# This very cool piece of Python code was taken from github.com/nesanders/colorblind-colormap
 # and slightly modified. It provides colour blind friendly colour maps according to
 # Wong, B. (2011) Nature Methods 8:441
 
