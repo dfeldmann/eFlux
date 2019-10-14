@@ -79,8 +79,8 @@ mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.preamble'] = [
 r"\usepackage[utf8]{inputenc}",
 r"\usepackage[T1]{fontenc}",
-r'\usepackage{lmodern, palatino, eulervm}',
-#r'\usepackage{mathptmx}',
+#r'\usepackage{lmodern, palatino, eulervm}',
+r'\usepackage{mathptmx}',
 r"\usepackage[detect-all]{siunitx}",
 r'\usepackage{amsmath, amstext, amssymb}',
 r'\usepackage{xfrac}']
@@ -117,8 +117,13 @@ SkyBlue       = '#56B4E9'
 ReddishPurple = '#CC79A7'
 Yellow        = '#F0E442'
 Black         = '#000000'
+Grey          = '#999999'
 exec(open("./colourMaps.py").read()) # 
 VermBlue = CBWcm['VeBu']             # Vermillion (-) White (0) Blue (+)
+
+# buffer layer
+b0 = np.ones(len(th))*(1.0- 5.0/180.0)
+b1 = np.ones(len(th))*(1.0-30.0/180.0)
 
 # rectangular plot of polar data
 x, y = np.meshgrid(th, r)
@@ -134,8 +139,11 @@ ax1.set_xticks([])
 ax1.set_yticks([])
 ax1.grid(False) # hide grid lines
 pcm = ax1.pcolormesh(x, y, pi, vmin=-piabs, vmax=+piabs, cmap=VermBlue, shading ='gouraud')
-ax1.contour(th, r, pi, levels=[cln], colors=Vermillion, linestyles='-') #, linewidths=1.1)
-ax1.contour(th, r, pi, levels=[clp], colors=Blue, linestyles='-') # , linewidths=1.1)
+ax1.plot(th, np.ones(len(th))*b0, color=Grey, zorder=2) # 15+
+ax1.plot(th, np.ones(len(th))*b1, color=Grey, zorder=2) # 15+
+ax1.contour(th, r, pi, levels=[cln], colors=Vermillion, linestyles='-', zorder=3) #, linewidths=1.1)
+ax1.contour(th, r, pi, levels=[clp], colors=Blue, linestyles='-', zorder=3) # , linewidths=1.1)
+
 
 # plot colour bar
 axc = plt.axes([0.02, 0.10, 0.4, 0.08])
@@ -154,6 +162,6 @@ else:
  fnam = str.replace(fnam, '.h5', '.pdf')
  fnam = str.replace(fnam, fpath, '')
  fnam = str.replace(fnam, 'piField', 'plotPiFieldCross')
- plt.savefig(fnam)
+ plt.savefig(fnam, transparent=True)
  print('Written file', fnam)
 fig.clf()

@@ -136,8 +136,10 @@ ax1.spines['top'].set_color('none')
 
 # buffer layer annotation
 #ax1.axvspan(5.0, 30.0, ymin=0.049, alpha=1.0, color=Grey, zorder=0)
-ax1.text(6.5, 0.15, r"Buffer layer")
-ax1.annotate(s='', xy=(5.0, 0.11), xytext=(30.0, 0.11), arrowprops=dict(arrowstyle='|-|', linewidth=0.75, shrinkA=0.0, shrinkB=0.0))
+#ax1.axvline(x=5.0, color=Grey)
+#ax1.axvline(x=30.0, color=Grey)
+ax1.text(6.5, 0.15, r"Buffer layer") # , color=Grey) # bbox=dict(facecolor=Grey))
+ax1.annotate(s='', xy=(5.0, 0.11), xytext=(30.0, 0.11), arrowprops=dict(arrowstyle='|-|', linewidth=0.75, shrinkA=0.0, shrinkB=0.0, edgecolor=Grey))
 
 # plot mode interactive (1) or pdf (2)
 if plot != 2:
@@ -146,7 +148,7 @@ if plot != 2:
 else:
  fig.tight_layout()
  #fnam = fnam.replace(".dat", "viscous.pdf")
- plt.savefig(fnamout)
+ plt.savefig(fnamout, transparent=True)
  print('Written file:', fnamout)
 
 fig.clf()
