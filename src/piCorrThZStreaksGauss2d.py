@@ -124,7 +124,7 @@ for iFile in iFiles:
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tvort), 'seconds')
 
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
+    u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
 
     # filter velocity field
     print('Filtering velocity components and mixed terms... ', end='', flush=True)

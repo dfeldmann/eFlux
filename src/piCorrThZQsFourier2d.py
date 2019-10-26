@@ -121,7 +121,7 @@ for iFile in iFiles:
     print(' with data structure u',u_z.shape)
     
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
+    u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
 
     # detect and extrct Q events from the instantaneous volocity vector field
     # TODO: compute correlation maps for ALL wall-parallel planes
