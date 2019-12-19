@@ -171,7 +171,7 @@ for iFile in iFiles:
         uz1d = u_z[k, :, l] 
         pi1d =  pi[k, :, l]
 
-        # detect and extract Q events from the 1d volocity sub-set
+        # detect and extract Q events from the 1d velocity sub-set
         q1 = np.zeros(nth) #* 1.0
         q2 = np.zeros(nth) #* 2.0
         q3 = np.zeros(nth) #+ 1.0

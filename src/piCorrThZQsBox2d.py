@@ -123,7 +123,7 @@ for iFile in iFiles:
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
     u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
 
-    # detect and extrct Q events from the instantaneous volocity vector field
+    # detect and extrct Q events from the instantaneous velocity vector field
     # TODO: compute correlation maps for ALL wall-parallel planes
     #t1 = timeit.default_timer()
     #print('Extract Q events... ', end='', flush=True)
@@ -166,9 +166,9 @@ for iFile in iFiles:
     #q32d = q3[k, :, :]
     #q42d = q4[k, :, :]
 
-    # detect and extract Q events from the 2d volocity sub-set
+    # detect and extract Q events from the 2d velocity sub-set
     tqs = timeit.default_timer()
-    print("Extracting Q events from 2d volocity field...", end='', flush=True)
+    print("Extracting Q events from 2d velocity field...", end='', flush=True)
     q1 = np.zeros(ur2d.shape)
     q2 = np.zeros(ur2d.shape)
     q3 = np.zeros(ur2d.shape)

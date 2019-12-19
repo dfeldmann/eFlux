@@ -87,9 +87,9 @@ piG  = piG[k, :, :]
 ur2d =  ur[k, :, :]  
 uz2d =  uz[k, :, :]  
 
-# detect and extract Q events from the 2d volocity sub-set
+# detect and extract Q events from the 2d velocity sub-set
 tqs = timeit.default_timer()
-print("Extracting Q events from 2d volocity field...", end='', flush=True)
+print("Extracting Q events from 2d velocity field...", end='', flush=True)
 q1 = np.zeros(ur2d.shape)
 q2 = np.zeros(ur2d.shape)
 q3 = np.zeros(ur2d.shape)
