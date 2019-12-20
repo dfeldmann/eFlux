@@ -314,6 +314,8 @@ f.write("# + Azimuthal filter scale: lambdaTh+ = %f viscous units, lambdaTh = %f
 f.write("# + Axial filter scale:     lambdaZ+  = %f viscous units, lambdaZ  = %f R\n" % (lambdaZp,  lambdaZ))
 f.write("# Python post-processing on data set nsPipe/pipe0002 generated in a DNS using nsPipe\n")
 f.write("# Temporal (ensemble) averaging over %d sample(s)\n" % (nt))
+f.write("# First snapshot: %08d\n" % (iFirst))
+f.write("# Last snapshot:  %08d\n" % (iLast))
 f.write("# Additional spatial averaging in axial (z) direction over %d points\n" % (nz))
 f.write("# 01st column: Azimuthal separation DeltaTh in units of pipe radii (R), nth = %d points\n" % nth)
 f.write("# 02rd column: Auto-correlation  Q1 with Q1\n")
