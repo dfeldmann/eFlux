@@ -20,7 +20,7 @@
 # Usage:    python piCorrThStreaksFourier2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
-# Modified: 20th September 2019
+# Modified: 21st December 2019
 
 import timeit
 import math
@@ -35,7 +35,7 @@ iFirst =  1675000 # 570000
 iLast  =  1675000
 iStep  =     5000
 iFiles = range(iFirst, iLast+iStep, iStep)
-print('Compute eFlux (Fourier) and 1d correlations for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
+print('Compute eFlux (Fourier) and 1d azimuthal correlations with streaks for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
 # path to data files (do modify)
 fpath = '../../outFiles/'
@@ -78,25 +78,34 @@ from joblib import Parallel, delayed
 print("Running on", multiprocessing.cpu_count(), "cores")
 
 # prepare arrays for statistics
-acUz       = np.zeros(nth) # initialise auto-correlation for u'_z
-acUzF      = np.zeros(nth) # initialise auto-correlation for u'_z Fourier filtered
-acOmegaZ   = np.zeros(nth) # initialise auto-correlation for omega_z
-acPi       = np.zeros(nth) # initialise auto-correlation for Pi
-ccUzPi     = np.zeros(nth) # initialise cross-correlation for u'_z and eFlux
-ccUzFPi    = np.zeros(nth) # initialise cross-correlation for u'_z filtered and eFlux
-ccOmegaZPi = np.zeros(nth) # initialise cross-correlation for omega_z nd eFlux
-nt         = 0             # reset ensemble counter
+acUz        = np.zeros(nth) # initialise auto-correlation for u'_z
+acUzF       = np.zeros(nth) # initialise auto-correlation for u'_z Fourier filtered
+acOmegaZ    = np.zeros(nth) # initialise auto-correlation for omega_z
+acPi        = np.zeros(nth) # initialise auto-correlation for Pi
+ccUzPi      = np.zeros(nth) # initialise cross-correlation for u'_z and eFlux
+ccUzFPi     = np.zeros(nth) # initialise cross-correlation for u'_z filtered and eFlux
+ccOmegaZPi  = np.zeros(nth) # initialise cross-correlation for omega_z nd eFlux
+ccUzPip     = np.zeros(nth) # initialise cross-correlation for u'_z and eFlux > 0 fwd only
+ccUzFPip    = np.zeros(nth) # initialise cross-correlation for u'_z filtered and eFlux > 0 fwd only
+ccOmegaZPip = np.zeros(nth) # initialise cross-correlation for omega_z and eFlux > 0 fwd only
+ccUzPin     = np.zeros(nth) # initialise cross-correlation for u'_z and eFlux < 0 bwd only
+ccUzFPin    = np.zeros(nth) # initialise cross-correlation for u'_z filtered and eFlux < 0 bwd only
+ccOmegaZPin = np.zeros(nth) # initialise cross-correlation for omega_z and eFlux < 0 bwd only
+nt          = 0             # reset ensemble counter
 
 # first and second statistical moments for normalisation
-uz1     = 0
+uz1     = 0 # streaks
 uz2     = 0
-uzF1    = 0
+uzF1    = 0 # filtered streak
 uzF2    = 0
-omegaZ1 = 0
+omegaZ1 = 0 # streamwise vortices
 omegaZ2 = 0
-pi1     = 0
+pi1     = 0 # total flux
 pi2     = 0
-
+pip1    = 0 # only forward (positive) flux
+pip2    = 0
+pin1    = 0 # only backward (negative) flux
+pin2    = 0
 # reset wall-clock time
 t0 = timeit.default_timer()
 
@@ -164,15 +173,26 @@ for iFile in iFiles:
         omegaZ1d = omegaZ[k, :, l]
         pi1d     =     pi[k, :, l]
 
+        # isolate forward/backward flux events in the 1d velocity subset
+        pip1d = np.where(pi1d > 0, pi1d, 0) # only positive, zero elsewhere
+        pin1d = np.where(pi1d < 0, pi1d, 0) # only negative, zero elsewhere
+
         # compute correlations and sum up axial (spatial) and temporal (ensemble) statistics
         import crossCorrelation as c 
-        acUz       = acUz       + c.corr1d(uz1d,     uz1d)     # auto-correlations
-        acUzF      = acUzF      + c.corr1d(uzF1d,    uzF1d)
-        acOmegaZ   = acOmegaZ   + c.corr1d(omegaZ1d, omegaZ1d)
-        acPi       = acPi       + c.corr1d(pi1d,     pi1d)
-        ccUzPi     = ccUzPi     + c.corr1d(uz1d,     pi1d)     # cross-correlations
-        ccUzFPi    = ccUzFPi    + c.corr1d(uzF1d,    pi1d)
-        ccOmegaZPi = ccOmegaZPi + c.corr1d(omegaZ1d, pi1d)
+        acUz        = acUz        + c.corr1d(uz1d,     uz1d)     # auto-correlations
+        acUzF       = acUzF       + c.corr1d(uzF1d,    uzF1d)
+        acOmegaZ    = acOmegaZ    + c.corr1d(omegaZ1d, omegaZ1d)
+        acPi        = acPi        + c.corr1d(pi1d,     pi1d)
+        ccUzPi      = ccUzPi      + c.corr1d(uz1d,     pi1d)     # cross-correlations full flux
+        ccUzFPi     = ccUzFPi     + c.corr1d(uzF1d,    pi1d)
+        ccOmegaZPi  = ccOmegaZPi  + c.corr1d(omegaZ1d, pi1d)
+        ccUzPip     = ccUzPip     + c.corr1d(uz1d,     pip1d)    # cross-correlations forward flux
+        ccUzFPip    = ccUzFPip    + c.corr1d(uzF1d,    pip1d)
+        ccOmegaZPip = ccOmegaZPip + c.corr1d(omegaZ1d, pip1d)
+        ccUzPin     = ccUzPin     + c.corr1d(uz1d,     pin1d)    # cross-correlations backward flux
+        ccUzFPin    = ccUzFPin    + c.corr1d(uzF1d,    pin1d)
+        ccOmegaZPin = ccOmegaZPin + c.corr1d(omegaZ1d, pin1d)
+
 
         # sum up first and second statistical moments in time and (homogeneous) theta and z direction for normalisation
         uz1     = uz1     + np.sum(uz1d)
@@ -183,6 +203,10 @@ for iFile in iFiles:
         omegaZ2 = omegaZ2 + np.sum(omegaZ1d**2)
         pi1     = pi1     + np.sum(pi1d)
         pi2     = pi2     + np.sum(pi1d**2)
+        pip1    = pip1    + np.sum(pip1d)
+        pip2    = pip2    + np.sum(pip1d**2)
+        pin1    = pin1    + np.sum(pin1d)
+        pin2    = pin2    + np.sum(pin1d**2)
 
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tcorr), 'seconds')
 
@@ -190,13 +214,19 @@ for iFile in iFiles:
     nt = nt + 1
 
 # divide correlation statistics by total number of spatio-temporal samples
-acUz       = acUz       / (nt*nz)
-acUzF      = acUzF      / (nt*nz)
-acOmegaZ   = acOmegaZ   / (nt*nz)
-acPi       = acPi       / (nt*nz)
-ccUzPi     = ccUzPi     / (nt*nz)
-ccUzFPi    = ccUzFPi    / (nt*nz)
-ccOmegaZPi = ccOmegaZPi / (nt*nz)
+acUz        = acUz        / (nt*nz)
+acUzF       = acUzF       / (nt*nz)
+acOmegaZ    = acOmegaZ    / (nt*nz)
+acPi        = acPi        / (nt*nz)
+ccUzPi      = ccUzPi      / (nt*nz)
+ccUzFPi     = ccUzFPi     / (nt*nz)
+ccOmegaZPi  = ccOmegaZPi  / (nt*nz)
+ccUzPip     = ccUzPip     / (nt*nz)
+ccUzFPip    = ccUzFPip    / (nt*nz)
+ccOmegaZPip = ccOmegaZPip / (nt*nz)
+ccUzPin     = ccUzPin     / (nt*nz)
+ccUzFPin    = ccUzFPin    / (nt*nz)
+ccOmegaZPin = ccOmegaZPin / (nt*nz)
 
 # divide normalisation statistics by total number of spatio-temporal samples
 uz1     = uz1     / (nth*nz*nt)
@@ -207,21 +237,33 @@ omegaZ1 = omegaZ1 / (nth*nz*nt)
 omegaZ2 = omegaZ2 / (nth*nz*nt)
 pi1     = pi1     / (nth*nz*nt)
 pi2     = pi2     / (nth*nz*nt)
+pip1    = pip1    / (nth*nz*nt)
+pip2    = pip2    / (nth*nz*nt)
+pin1    = pin1    / (nth*nz*nt)
+pin2    = pin2    / (nth*nz*nt)
 
 # compute RMS for normalisation
-uzRms      = np.sqrt(uz2 - uz1**2)
-uzFRms     = np.sqrt(uzF2 - uzF1**2)
-omegaZRms  = np.sqrt(omegaZ2 - omegaZ1**2)
-piRms      = np.sqrt(pi2 - pi1**2)
+uzRms     = np.sqrt(uz2 - uz1**2)
+uzFRms    = np.sqrt(uzF2 - uzF1**2)
+omegaZRms = np.sqrt(omegaZ2 - omegaZ1**2)
+piRms     = np.sqrt(pi2 - pi1**2)
+pipRms    = np.sqrt(pip2 - pip1**2)
+pinRms    = np.sqrt(pin2 - pin1**2)
 
 # normalise correlations with local RMS 
-acUz       = acUz       / (uzRms     * uzRms)
-acUzF      = acUzF      / (uzFRms    * uzFRms)
-acOmegaZ   = acOmegaZ   / (omegaZRms * omegaZRms)
-acPi       = acPi       / (piRms     * piRms)
-ccUzPi     = ccUzPi     / (uzRms     * piRms)
-ccUzFPi    = ccUzFPi    / (uzFRms    * piRms)
-ccOmegaZPi = ccOmegaZPi / (omegaZRms * piRms)
+acUz        = acUz        / (uzRms     * uzRms)
+acUzF       = acUzF       / (uzFRms    * uzFRms)
+acOmegaZ    = acOmegaZ    / (omegaZRms * omegaZRms)
+acPi        = acPi        / (piRms     * piRms)
+ccUzPi      = ccUzPi      / (uzRms     * piRms)
+ccUzFPi     = ccUzFPi     / (uzFRms    * piRms)
+ccOmegaZPi  = ccOmegaZPi  / (omegaZRms * piRms)
+ccUzPip     = ccUzPip     / (uzRms     * pipRms)
+ccUzFPip    = ccUzFPip    / (uzFRms    * pipRms)
+ccOmegaZPip = ccOmegaZPip / (omegaZRms * pipRms)
+ccUzPin     = ccUzPin     / (uzRms     * pinRms)
+ccUzFPin    = ccUzFPin    / (uzFRms    * pinRms)
+ccOmegaZPin = ccOmegaZPin / (omegaZRms * pinRms)
 
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
@@ -237,7 +279,7 @@ f.write("# For the following flow variables:\n")
 f.write("# + Streamwise velocity u'_z (High-speed and low-speed streaks)\n")
 f.write("# + Filtered streamwise velocity u'_zF (Smoothed streaks)\n")
 f.write("# + Axial vorticity component omega_z (Streamwise aligned vortices)\n")
-f.write("# + Inter-scale energy flux Pi across scale lambda\n")
+f.write("# + Inter-scale energy flux Pi (full, only positive, only negative) across scale lambda\n")
 f.write("# Flux and filtered quantities based on 2d Fourier kernel with:\n")
 f.write("# + Azimuthal filter scale: lambdaTh+ = %f viscous units, lambdaTh = %f R\n" % (lambdaThp, lambdaTh))
 f.write("# + Axial filter scale:     lambdaZ+  = %f viscous units, lambdaZ  = %f R\n" % (lambdaZp,  lambdaZ))
@@ -254,8 +296,14 @@ f.write("# 05th column: Auto-correlation  Pi      with Pi\n")
 f.write("# 06th column: Cross-correlation u'_z    with Pi\n")
 f.write("# 07th column: Cross-correlation u'_zF   with Pi\n")
 f.write("# 08th column: Cross-correlation omega_z with Pi\n")
+f.write("# 09th column: Cross-correlation u'_z    with Pi > 0\n")
+f.write("# 10th column: Cross-correlation u'_zF   with Pi > 0\n")
+f.write("# 11th column: Cross-correlation omega_z with Pi > 0\n")
+f.write("# 12th column: Cross-correlation u'_z    with Pi < 0\n")
+f.write("# 13th column: Cross-correlation u'_zF   with Pi < 0\n")
+f.write("# 14th column: Cross-correlation omega_z with Pi < 0\n")
 for i in range(nth):
-  f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i]))
+  f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
 
@@ -295,7 +343,7 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-fig = plt.figure(num=None, figsize=mm2inch(134.0, 70.0), dpi=300) # , constrained_layout=False) 
+fig = plt.figure(num=None, figsize=mm2inch(134.0, 140.0), dpi=300) # , constrained_layout=False) 
 #fig = plt.figure(num=None, dpi=100) # , constrained_layout=False)
 
 # conservative colour palette appropriate for colour-blind (http://mkweb.bcgsc.ca/colorblind/)
@@ -315,7 +363,7 @@ VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue
 DeltaTh = DeltaTh * ReTau
 
 # plot azimuthal auto-correlations
-ax1 = plt.subplot2grid((1, 2), (0, 0), rowspan=1, colspan=1)
+ax1 = plt.subplot2grid((2, 2), (0, 0), rowspan=1, colspan=1)
 ax1.set_xlabel(r"$\Delta\theta r^+$")
 ax1.set_ylabel(r"$C$")
 ax1.axhline(y=0.0, color=Grey)
@@ -325,9 +373,10 @@ ax1.plot(DeltaTh, acUzF,    color=Vermillion,  linestyle='-', label=r"$C_{\overl
 ax1.plot(DeltaTh, acOmegaZ, color=Blue,        linestyle='-', label=r"$C_{\omega_{z}\omega_{z}}$")
 ax1.plot(DeltaTh, acPi,     color=BluishGreen, linestyle='-', label=r"$C_{\Pi\Pi }$")
 ax1.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax1.text(-200.0, 0.75, "Fourier", ha="center", va="center")
 
-# plot azimuthal cross-correlation
-ax2 = plt.subplot2grid((1, 2), (0, 1), rowspan=1, colspan=1)
+# plot azimuthal cross-correlation full flux
+ax2 = plt.subplot2grid((2, 2), (0, 1), rowspan=1, colspan=1)
 ax2.set_xlabel(r"$\Delta\theta r^+$")
 ax2.axhline(y=0.0, color=Grey)
 ax2.axvline(x=0.0, color=Grey)
@@ -335,6 +384,26 @@ ax2.plot(DeltaTh, ccUzPi,     color=Black,       linestyle='-', label=r"$C_{u^{\
 ax2.plot(DeltaTh, ccUzFPi,    color=Vermillion,  linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\Pi}$")
 ax2.plot(DeltaTh, ccOmegaZPi, color=Blue,        linestyle='-', label=r"$C_{\omega_{z}\Pi}$")
 ax2.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+
+# plot azimuthal cross-correlation positive flux
+ax3 = plt.subplot2grid((2, 2), (1, 0), rowspan=1, colspan=1)
+ax3.set_xlabel(r"$\Delta\theta r^+$")
+ax3.axhline(y=0.0, color=Grey)
+ax3.axvline(x=0.0, color=Grey)
+ax3.plot(DeltaTh, ccUzPip,     color=Black,       linestyle='-', label=r"$C_{u^{\prime}_{z}\Pi^{+}}$")
+ax3.plot(DeltaTh, ccUzFPip,    color=Vermillion,  linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\Pi^{+}}$")
+ax3.plot(DeltaTh, ccOmegaZPip, color=Blue,        linestyle='-', label=r"$C_{\omega_{z}\Pi^{+}}$")
+ax3.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+
+# plot azimuthal cross-correlation negative flux
+ax4 = plt.subplot2grid((2, 2), (1, 1), rowspan=1, colspan=1)
+ax4.set_xlabel(r"$\Delta\theta r^+$")
+ax4.axhline(y=0.0, color=Grey)
+ax4.axvline(x=0.0, color=Grey)
+ax4.plot(DeltaTh, ccUzPin,     color=Black,       linestyle='-', label=r"$C_{u^{\prime}_{z}\Pi^{-}}$")
+ax4.plot(DeltaTh, ccUzFPin,    color=Vermillion,  linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\Pi^{-}}$")
+ax4.plot(DeltaTh, ccOmegaZPin, color=Blue,        linestyle='-', label=r"$C_{\omega_{z}\Pi^{-}}$")
+ax4.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
 
 # plot mode interactive or pdf
 if plot != 2:
