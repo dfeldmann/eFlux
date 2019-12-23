@@ -402,9 +402,9 @@ ax4 = plt.subplot2grid((2, 2), (1, 1), rowspan=1, colspan=1)
 ax4.set_xlabel(r"$\Delta z^+$")
 ax4.axhline(y=0.0, color=Grey)
 ax4.axvline(x=0.0, color=Grey)
-ax4.plot(DeltaZ, ccUzPin,     color=Black,      linestyle='-', label=r"$C_{u^{\prime}_{z}\Pi^{+}}$")
-ax4.plot(DeltaZ, ccUzFPin,    color=Vermillion, linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\Pi^{+}}$")
-ax4.plot(DeltaZ, ccOmegaZPin, color=Blue,       linestyle='-', label=r"$C_{\omega_{z}\Pi^{+}}$")
+ax4.plot(DeltaZ, ccUzPin,     color=Black,      linestyle='-', label=r"$C_{u^{\prime}_{z}\Pi^{-}}$")
+ax4.plot(DeltaZ, ccUzFPin,    color=Vermillion, linestyle='-', label=r"$C_{\overline{u^{\prime}_{z}}\Pi^{-}}$")
+ax4.plot(DeltaZ, ccOmegaZPin, color=Blue,       linestyle='-', label=r"$C_{\omega_{z}\Pi^{-}}$")
 ax4.legend(loc='best', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
 
 # plot mode interactive or pdf
