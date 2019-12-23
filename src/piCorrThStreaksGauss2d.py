@@ -96,7 +96,7 @@ nt          = 0             # reset ensemble counter
 # first and second statistical moments for normalisation
 uz1     = 0 # streaks
 uz2     = 0
-uzF1    = 0 # filtered streak
+uzF1    = 0 # filtered streaks
 uzF2    = 0
 omegaZ1 = 0 # streamwise vortices
 omegaZ2 = 0
@@ -106,6 +106,7 @@ pip1    = 0 # only forward (positive) flux
 pip2    = 0
 pin1    = 0 # only backward (negative) flux
 pin2    = 0
+
 # reset wall-clock time
 t0 = timeit.default_timer()
 
@@ -193,8 +194,7 @@ for iFile in iFiles:
         ccUzFPin    = ccUzFPin    + c.corr1d(uzF1d,    pin1d)
         ccOmegaZPin = ccOmegaZPin + c.corr1d(omegaZ1d, pin1d)
 
-
-        # sum up first and second statistical moments in time and (homogeneous) theta and z direction for normalisation
+        # sum up first and second statistical moments in time and (homogeneous) z direction for normalisation
         uz1     = uz1     + np.sum(uz1d)
         uz2     = uz2     + np.sum(uz1d**2)
         uzF1    = uzF1    + np.sum(uzF1d)
@@ -359,7 +359,7 @@ Black         = '#000000'
 exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 DeltaTh = DeltaTh * ReTau
 
 # plot azimuthal auto-correlations

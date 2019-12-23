@@ -332,7 +332,7 @@ Black         = '#000000'
 exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 DeltaZ = DeltaZ * ReTau
 
 # plot axial auto-correlations

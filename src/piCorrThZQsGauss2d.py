@@ -371,7 +371,7 @@ VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue
 from mpl_toolkits.axes_grid1 import ImageGrid
 ig = ImageGrid(fig, 111, nrows_ncols=(5, 2), direction='column', axes_pad=(0.6, 0.15), cbar_size=0.07, cbar_mode='each', cbar_location='right', cbar_pad=0.05)
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 DeltaTh = DeltaTh * ReTau
 DeltaZ  = DeltaZ  * ReTau
 
