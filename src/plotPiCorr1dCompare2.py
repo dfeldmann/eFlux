@@ -114,7 +114,7 @@ Yellow        = '#F0E442'
 Black         = '#000000'
 Grey          = '#999999'
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 th = th * Re_tau
 z  =  z * Re_tau
 
