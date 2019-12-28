@@ -28,7 +28,7 @@ import numpy as np
 import h5py
 
 # plot mode: (0) none, (1) interactive, (2) pdf
-plot = 2
+plot = 1
 
 # range of state files to read flow field data
 iFirst =   570000
