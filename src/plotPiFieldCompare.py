@@ -23,7 +23,7 @@ Re_b   = 5300.0 # Bulk Reynolds number  Re_b   = u_b   * D / nu = u_cHP * R / nu
 Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
 # read Fourier energy flux field from file
-fnam = 'piFieldFourier2d_pipe0002_01675000.h5'
+fnam = '../40x75/piFieldFourier2d_pipe0002_01675000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading eflux from file", fnam)
 r   = np.array(f['grid/r']) # read grid only once
@@ -112,17 +112,24 @@ Black         = '#000000'
 exec(open("./colourMaps.py").read()) # 
 VermBlue = CBWcm['VeBu']             # Vermillion (-) White (0) Blue (+)
 
+# convert spatial coordiantes from outer to inner units
+#r = r * Re_tau
+#z = z * Re_tau
+
+# convert eFlux from outer to inner (viscous) units
+fpi = Re_b**3.0 / Re_tau**4.0
+print('Factor for eFlux in viscous units:', fpi)
+piF = piF * fpi
+piG = piG * fpi
+piB = piB * fpi
+
 # find absolute maxima of extracted 2d data
 ampiF = np.max(np.abs(piF))           # Fourier max
 ampiG = np.max(np.abs(piG))           # Gauss max
 ampiB = np.max(np.abs(piB))           # Box max
 ampi  = np.max([ampiF, ampiG, ampiB]) # all max
-ampi  = 0.0100                        # manual max
-clm   =-0.0020                        # manual contour level
-
-# convert spatial coordiantes from outer to inner units
-#r = r * Re_tau
-#z = z * Re_tau
+ampi  = 1.5000                        # manual max
+#clm   =-0.0020                       # manual contour level
 
 # modify box for filter name annotation
 filterBox = dict(boxstyle="square, pad=0.3", fc='w', ec=Black, lw=0.5)
@@ -139,16 +146,16 @@ ax1.set_ylabel(r"$\theta r$ in $R$")
 im1 = ax1.imshow(piF, vmin=-ampi, vmax=+ampi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(z), np.max(z), np.min(th*r[k]), np.max(th*r[k])], origin='lower')
 #cl1 = ax1.contour(z, th*r[k], piF, levels=[clm], colors=Black, linestyles='-', linewidths=0.1)
 ax1.set_aspect('equal')
-ax1.text(0.985, 0.9, r"Fourier", ha="right", va="top", transform=ax1.transAxes, rotation=0, bbox=filterBox)
-ax1.text(0.012, 0.9, r"a)", ha="left", va="top", transform=ax1.transAxes)
+ax1.text(0.985, 0.90, r"Fourier", ha="right", va="top", transform=ax1.transAxes, rotation=0, bbox=filterBox)
+ax1.text(0.008, 0.93, r"a)", ha="left", va="top", transform=ax1.transAxes)
 
 # plot Gauss eFlux
 ax2.set_ylabel(r"$\theta r$ in $R$")
 im2 = ax2.imshow(piG, vmin=-ampi, vmax=+ampi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(z), np.max(z), np.min(th*r[k]), np.max(th*r[k])], origin='lower')
 #cl2 = ax2.contour(z, th*r[k], piG, levels=[clm], colors=Black, linestyles='-', linewidths=0.1)
 ax2.set_aspect('equal')
-ax2.text(0.985, 0.9, r"Gauss", ha="right", va="top", transform=ax2.transAxes, rotation=0, bbox=filterBox)
-ax2.text(0.012, 0.9, r"b)", ha="left", va="top", transform=ax2.transAxes)
+ax2.text(0.985, 0.90, r"Gauss", ha="right", va="top", transform=ax2.transAxes, rotation=0, bbox=filterBox)
+ax2.text(0.008, 0.93, r"b)", ha="left", va="top", transform=ax2.transAxes)
 
 # plot box eFlux
 ax3.set_xlabel(r"$z$ in $R$")
@@ -156,14 +163,15 @@ ax3.set_ylabel(r"$\theta r$ in $R$")
 im3 = ax3.imshow(piB, vmin=-ampi, vmax=+ampi, cmap=VermBlue, interpolation='bilinear', extent=[np.min(z), np.max(z), np.min(th*r[k]), np.max(th*r[k])], origin='lower')
 #cl3 = ax3.contour(z, th*r[k], piB, levels=[clm], colors=Black, linestyles='-', linewidths=0.1)
 ax3.set_aspect('equal')
-ax3.text(0.985, 0.9, r"Box", ha="right", va="top", transform=ax3.transAxes, rotation=0, bbox=filterBox)
-ax3.text(0.012, 0.9, r"c)", ha="left", va="top", transform=ax3.transAxes)
+ax3.text(0.985, 0.90, r"Box", ha="right", va="top", transform=ax3.transAxes, rotation=0, bbox=filterBox)
+ax3.text(0.008, 0.93, r"c)", ha="left", va="top", transform=ax3.transAxes)
 
 # plot common colour bar
-fmt = FormatStrFormatter('%6.2f')
+fmt = FormatStrFormatter('%g') # %6.3f
 cb1 = ax1.cax.colorbar(im1, format=fmt)
 cb1 = ig.cbar_axes[0].colorbar(im1)
-cb1.ax.set_ylabel(r"$\Pi$ in $U^{3}_{c}R^{2}$")
+#cb1.ax.set_ylabel(r"$\Pi$ in $U^{3}_{c}R^{2}$") # outer units
+cb1.ax.set_ylabel(r"$\Pi$ in $\sfrac{u_{\tau}^{4}}{\nu}$", labelpad=-5.0)  # inner units
 cb1.ax.set_yticks([-ampi, 0.000, +ampi])
 #cb1.set_ticks([-ampi, clm, 0.000, -clm, +ampi]) # tweak colour bar ticks to show manual countour level
 

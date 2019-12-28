@@ -121,9 +121,9 @@ for iFile in iFiles:
     print(' with data structure u',u_z.shape)
     
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
+    u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
 
-    # detect and extrct Q events from the instantaneous volocity vector field
+    # detect and extrct Q events from the instantaneous velocity vector field
     # TODO: compute correlation maps for ALL wall-parallel planes
     #t1 = timeit.default_timer()
     #print('Extract Q events... ', end='', flush=True)
@@ -166,9 +166,9 @@ for iFile in iFiles:
     #q32d = q3[k, :, :]
     #q42d = q4[k, :, :]
 
-    # detect and extract Q events from the 2d volocity sub-set
+    # detect and extract Q events from the 2d velocity sub-set
     tqs = timeit.default_timer()
-    print("Extracting Q events from 2d volocity field...", end='', flush=True)
+    print("Extracting Q events from 2d velocity field...", end='', flush=True)
     q1 = np.zeros(ur2d.shape)
     q2 = np.zeros(ur2d.shape)
     q3 = np.zeros(ur2d.shape)
@@ -371,7 +371,7 @@ VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue
 from mpl_toolkits.axes_grid1 import ImageGrid
 ig = ImageGrid(fig, 111, nrows_ncols=(5, 2), direction='column', axes_pad=(0.6, 0.15), cbar_size=0.07, cbar_mode='each', cbar_location='right', cbar_pad=0.05)
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 DeltaTh = DeltaTh * ReTau
 DeltaZ  = DeltaZ  * ReTau
 

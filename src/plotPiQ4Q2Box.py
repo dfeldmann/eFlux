@@ -62,7 +62,7 @@ nz  = len(z)
 print('With', nr, 'radial (r) points')
 print('With', nth, 'azimuthal (th) points')
 print('With', nz, 'axial (z) points')
-print('It is your responsibilty to make sure that both fields are defined on the exact same grid.')
+print('It is your responsibility to make sure that both fields are defined on the exact same grid.')
 
 # report global maxima
 print("Global max/min eFlux:", np.max(pi), np.min(pi))

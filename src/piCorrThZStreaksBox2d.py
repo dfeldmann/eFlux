@@ -124,7 +124,7 @@ for iFile in iFiles:
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tvort), 'seconds')
 
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
+    u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
 
     # filter velocity field
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
@@ -326,7 +326,7 @@ VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue
 from mpl_toolkits.axes_grid1 import ImageGrid
 ig = ImageGrid(fig, 111, nrows_ncols=(4, 2), direction='column', axes_pad=(0.6, 0.15), cbar_size=0.07, cbar_mode='each', cbar_location='right', cbar_pad=0.05)
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 DeltaTh = DeltaTh * ReTau
 DeltaZ  = DeltaZ  * ReTau
 

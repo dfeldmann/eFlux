@@ -49,7 +49,7 @@ print(nth, 'azimuthal (th) points')
 print(nz, 'axial (z) points')
 
 # read mean velocity profiles from ascii file (do modify)
-fnam = '../../onePointStatistics/statistics00570000to01675000nt0222.dat' 
+fnam = '../../onePointStatistics/statistics00570000to01675000nt0222.dat'
 print('Reading mean velocity profile from', fnam)
 rM   = np.loadtxt(fnam)[:, 0] # 1st column r
 u_zM = np.loadtxt(fnam)[:, 3] # 4th column <u_z>
@@ -73,7 +73,7 @@ t0 = timeit.default_timer()
 
 # loop over all state files
 for iFile in iFiles:
-    
+
     # read flow field data from next HDF5 file
     fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     f = h5py.File(fnam, 'r')
@@ -87,10 +87,10 @@ for iFile in iFiles:
     Re=f['setup'].attrs.__getitem__('Re')
     f.close()
     print(' with data structure u', u_z.shape)
-    
+
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z  = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
-    
+    u_z  = u_z - np.tile(u_zM, (nz, nth, 1)).T
+
     # filter velocity field
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
     t1 = timeit.default_timer()
@@ -114,7 +114,7 @@ for iFile in iFiles:
     #pi = np.zeros(u_z.shape)
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-t2), 'seconds')
 
-    # store result as individual HDF5 file    
+    # store result as individual HDF5 file
     fnam = 'piFieldBox2d_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     out = h5py.File(fnam, 'w') # open HDF5 file for writing
     fields = out.create_group("fields")
@@ -133,10 +133,10 @@ for iFile in iFiles:
     setup.attrs.create("Re", data=Re)
     out.close() # close HDF5 file
     print('Written file:', fnam)
-    
+
     # write corresponding XDMF meta data file
     # for further info visit
-    # https://pymotw.com/2/xml/etree/ElementTree/create.html 
+    # https://pymotw.com/2/xml/etree/ElementTree/create.html
     # http://www.xdmf.org/index.php/XDMF_Model_and_Format
     import xml.etree.cElementTree as ET
     from xml.dom import minidom
@@ -205,14 +205,14 @@ for iFile in iFiles:
     dataItemPi.set("Precision", "8")
     dataItemPi.set("Format", "HDF")
     dataItemPi.text = fnam+":/fields/pi/pi"
-  
+
     # create corresponding file name by replacing file suffix
     fnam = str.replace(fnam, '.h5', '.xmf')
     with open(fnam, "w+") as f:
         print(prettify(xdmf), file=f)
         print
 
-    # add declaration, workaround to ET    
+    # add declaration, workaround to ET
     declaration='<!DOCTYPE Xdmf SYSTEM "xdmf.dtd" []>\n'
     f = open(fnam, "r")
     contents = f.readlines()

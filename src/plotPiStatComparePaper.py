@@ -72,8 +72,8 @@ mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.preamble'] = [
 r"\usepackage[utf8]{inputenc}",
 r"\usepackage[T1]{fontenc}",
-r'\usepackage{lmodern, palatino, eulervm}',
-#r'\usepackage{mathptmx}',
+#r'\usepackage{lmodern, palatino, eulervm}',
+r'\usepackage{mathptmx}',
 r"\usepackage[detect-all]{siunitx}",
 r'\usepackage{amsmath, amstext, amssymb}',
 r'\usepackage{xfrac}']
@@ -81,6 +81,7 @@ r'\usepackage{xfrac}']
 mpl.rcParams.update({'font.family' : 'serif'})
 mpl.rcParams.update({'font.size' : 7})
 mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'lines.markersize'  : 1.75})
 mpl.rcParams.update({'axes.linewidth'    : 0.75})
 mpl.rcParams.update({'xtick.major.size'  : 2.00})
 mpl.rcParams.update({'xtick.major.width' : 0.75})
@@ -120,7 +121,8 @@ yp = (1.0-r) * Re_tau
 #fp  = (Re_b/Re_tau)**2.0
 fpi = 1.0 # (Re_b/Re_tau)**1.0  # please double check all this!!!
 #fpi = (Re_b/Re_tau)**3.0
-#fpi = (1.0/Re_b)**3.0
+fpi = Re_b**3.0 / Re_tau**4.0
+print('Factor for eFlux in viscous units:', fpi)
 
 # subplot layout
 import matplotlib.gridspec as gridspec
@@ -131,51 +133,61 @@ ax3 = plt.subplot(gs[2])
 ax4 = plt.subplot(gs[3])
 
 # plot first order statistics
-ax1.set_xlabel(r"$\langle\Pi\rangle$ in $U^3_{c}R^2$")
-#ax1.set_xlim(bottom=-0.010, top=0.035)
+ax1.set_xlabel(r"$\langle\Pi\rangle$ in $\sfrac{u_{\tau}^{4}}{\nu}$")
+ax1.set_xlim(left=-0.007, right=0.035)
 ax1.set_ylabel(r"$y^{+}$ in $\sfrac{\nu}{u_{\tau}}$")
 ax1.set_yscale('log')
 ax1.set_ylim(bottom=3.0e-1, top=Re_tau)
-ax1.axvline(x=0.0, color=Grey)
-ax1.plot(eFMeanFourier[:-2]*fpi, yp[:-2], color=Black,      linestyle='-',  zorder=7, label=r"Fourier")
-ax1.plot(  eFMeanGauss[:-2]*fpi, yp[:-2], color=Vermillion, linestyle='-',  zorder=9, label=r"Gauss")
-ax1.plot(    eFMeanBox[:-2]*fpi, yp[:-2], color=Blue,       linestyle='-',  zorder=8, label=r"Box")
-#ax1.plot(ypRef[:], eFMeanRef[:],          color=BluishGreen, linestyle='-',  zorder=6, label=r"H\"artel et al. 1994")
-ax1.text(0.96, 0.96, r"a)", ha="right", va="top", transform=ax1.transAxes) #, rotation=0, bbox=labelBox)
+ax1.minorticks_on()
+ax1.axvline(x=0.0, color=Black)
+ax1.plot(eFMeanFourier[:-2]*fpi, yp[:-2],  color=Black,       linestyle='-', marker='^', markevery=[58, 65, 69], zorder=7, label=r"Fourier")
+ax1.plot(  eFMeanGauss[:-2]*fpi, yp[:-2],  color=Vermillion,  linestyle='-', marker='o', markevery=[53, 65], zorder=9, label=r"Gauss", markersize=2.2)
+ax1.plot(    eFMeanBox[:-2]*fpi, yp[:-2],  color=Blue,        linestyle='-', marker='s', markevery=[48, 69], zorder=8, label=r"Box")
+ax1.plot(    eFMeanRef[:],       ypRef[:], color=BluishGreen, linestyle='',  marker='x', zorder=6, label=r"H\"artel")
+ax1.legend(loc=(0.45, 0.001), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax1.text(0.96, 0.96, r"a)", ha="right", va="top", transform=ax1.transAxes) 
+ax1.axhspan(5.0, 30.0, alpha=1.0, color=Grey, zorder=0)
 
 # plot second order statistics
-ax2.set_xlabel(r"$\langle\Pi^{\prime 2}\rangle^{\sfrac{1}{2}}$ in $U^3_{c}R^2$")
-#ax2.set_xlim(left=0.0)
+ax2.set_xlabel(r"$\langle\Pi^{\prime 2}\rangle^{\sfrac{1}{2}}$ in $\sfrac{u_{\tau}^{4}}{\nu}$")
+ax2.set_xlim(left=0.0, right=0.25)
 ax2.set_yscale('log')
 ax2.set_ylim(bottom=3.0e-1, top=Re_tau)
 ax2.set_yticklabels([])
-ax2.plot(eFRmsFourier[:-2]*fpi, yp[:-2], color=Black,      linestyle='-',  zorder=7, label=r"Fourier")
-ax2.plot(  eFRmsGauss[:-2]*fpi, yp[:-2], color=Vermillion, linestyle='-',  zorder=9, label=r"Gauss")
-ax2.plot(    eFRmsBox[:-2]*fpi, yp[:-2], color=Blue,       linestyle='-',  zorder=8, label=r"Box")
+ax2.minorticks_on()
+ax2.plot(eFRmsFourier[:-2]*fpi, yp[:-2], color=Black,      linestyle='-', marker='^', markevery=[58], zorder=7, label=r"Fourier")
+ax2.plot(  eFRmsGauss[:-2]*fpi, yp[:-2], color=Vermillion, linestyle='-', marker='o', markevery=[65], zorder=9, label=r"Gauss", markersize=2.2)
+ax2.plot(    eFRmsBox[:-2]*fpi, yp[:-2], color=Blue,       linestyle='-', marker='s', markevery=[61], zorder=8, label=r"Box")
 ax2.text(0.96, 0.96, r"b)", ha="right", va="top", transform=ax2.transAxes)
+ax2.axhspan(5.0, 30.0, alpha=1.0, color=Grey, zorder=0)
 
 # plot third order statistics
 ax3.set_xlabel(r"$\langle\Pi^{\prime 3}\rangle$ in $\langle\Pi^{\prime 2}\rangle^{\sfrac{3}{2}}$")
+ax3.set_xlim(left=-1.5, right=14.7)
 ax3.set_yscale('log')
 ax3.set_ylim(bottom=3.0e-1, top=Re_tau)
 ax3.set_yticklabels([])
-ax3.axvline(x=0.0, color=Grey)
-ax3.plot(eFSkewFourier[:-2]*fpi, yp[:-2], color=Black,      linestyle='-',  zorder=7, label=r"Fourier")
-ax3.plot(  eFSkewGauss[:-2]*fpi, yp[:-2], color=Vermillion, linestyle='-',  zorder=9, label=r"Gauss")
-ax3.plot(    eFSkewBox[:-2]*fpi, yp[:-2], color=Blue,       linestyle='-',  zorder=8, label=r"Box")
+ax3.minorticks_on()
+ax3.axvline(x=0.0, color=Black)
+ax3.plot(eFSkewFourier[:-2], yp[:-2], color=Black,      linestyle='-', marker='^', markevery=[41, 75], zorder=7, label=r"Fourier")
+ax3.plot(  eFSkewGauss[:-2], yp[:-2], color=Vermillion, linestyle='-', marker='o', markevery=[28, 75], zorder=9, label=r"Gauss", markersize=2.2)
+ax3.plot(    eFSkewBox[:-2], yp[:-2], color=Blue,       linestyle='-', marker='s', markevery=[38, 75], zorder=8, label=r"Box")
 ax3.text(0.96, 0.96, r"c)", ha="right", va="top", transform=ax3.transAxes)
+ax3.axhspan(5.0, 30.0, alpha=1.0, color=Grey, zorder=0)
 
 # plot fourth order statistics
 ax4.set_xlabel(r"$\langle\Pi^{\prime 4}\rangle$ in $\langle\Pi^{\prime 2}\rangle^{\sfrac{4}{2}}$")
-#ax4.set_xlim(bottom=0.0, top=500.0)
+ax4.set_xlim(left=0.0, right=550.0)
 ax4.set_yscale('log')
 ax4.set_ylim(bottom=3.0e-1, top=Re_tau)
 ax4.set_yticklabels([])
-ax4.plot(eFFlatFourier[:-2]*fpi, yp[:-2], color=Black,      linestyle='-',  zorder=7, label=r"Fourier")
-ax4.plot(  eFFlatGauss[:-2]*fpi, yp[:-2], color=Vermillion, linestyle='-',  zorder=9, label=r"Gauss")
-ax4.plot(    eFFlatBox[:-2]*fpi, yp[:-2], color=Blue,       linestyle='-',  zorder=8, label=r"Box")
-ax4.legend(loc='upper left', bbox_to_anchor=(0.3, 0.88), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax4.minorticks_on()
+ax4.plot(eFFlatFourier[:-2], yp[:-2], color=Black,      linestyle='-', marker='^', markevery=[41, 74], zorder=7, label=r"Fourier")
+ax4.plot(  eFFlatGauss[:-2], yp[:-2], color=Vermillion, linestyle='-', marker='o', markevery=[28, 74], zorder=9, label=r"Gauss", markersize=2.2)
+ax4.plot(    eFFlatBox[:-2], yp[:-2], color=Blue,       linestyle='-', marker='s', markevery=[38, 74], zorder=8, label=r"Box")
+#ax4.legend(loc='lower left', bbox_to_anchor=(0.3, 0.88), frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
 ax4.text(0.96, 0.96, r"d)", ha="right", va="top", transform=ax4.transAxes)
+ax4.axhspan(5.0, 30.0, alpha=1.0, color=Grey, zorder=0)
 
 # plot mode interactive or pdf
 if plot == 1:

@@ -120,7 +120,7 @@ for iFile in iFiles:
     print(' with data structure u',u_z.shape)
 
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
-    u_z = u_z - np.tile(u_zM, (len(z), len(th), 1)).T
+    u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
     
     # filter velocity field
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
@@ -159,7 +159,7 @@ for iFile in iFiles:
         uz1d = u_z[k, l, :] 
         pi1d =  pi[k, l, :]
 
-        # detect and extract Q events from the 1d volocity sub-set
+        # detect and extract Q events from the 1d velocity sub-set
         q1 = np.zeros(nz)
         q2 = np.zeros(nz)
         q3 = np.zeros(nz)
@@ -332,7 +332,7 @@ Black         = '#000000'
 exec(open("./colourMaps.py").read()) # many thanks to github.com/nesanders/colorblind-colormap 
 VermBlue = CBWcm['VeBu']             # from Vermillion (-) via White (0) to Blue (+)
 
-# convert spatial separation from outer to inner unit#s
+# convert spatial separation from outer to inner units
 DeltaZ = DeltaZ * ReTau
 
 # plot axial auto-correlations
