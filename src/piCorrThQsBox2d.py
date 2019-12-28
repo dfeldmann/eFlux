@@ -172,10 +172,10 @@ for iFile in iFiles:
         pi1d =  pi[k, :, l]
 
         # detect and extract Q events from the 1d velocity sub-set
-        q1 = np.zeros(nth) #* 1.0
-        q2 = np.zeros(nth) #* 2.0
-        q3 = np.zeros(nth) #+ 1.0
-        q4 = np.zeros(nth) #+ 2.0
+        q1 = np.zeros(nth)
+        q2 = np.zeros(nth)
+        q3 = np.zeros(nth)
+        q4 = np.zeros(nth)
         for i in range(nth):
          if (uz1d[i]>0) and (ur1d[i]<0): q1[i] = ur1d[i]*uz1d[i] # outward interaction: high-speed fluid away from wall
          if (uz1d[i]<0) and (ur1d[i]<0): q2[i] = ur1d[i]*uz1d[i] # ejection event:       low-speed fluid away from wall
