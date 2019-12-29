@@ -23,7 +23,6 @@
 # Modified: 20th December 2019
 
 import timeit
-import math
 import numpy as np
 import h5py
 
@@ -112,7 +111,7 @@ t0 = timeit.default_timer()
 
 # loop over all state files
 for iFile in iFiles:
-    
+
     # read flow field data from next HDF5 file
     fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     f = h5py.File(fnam, 'r')
