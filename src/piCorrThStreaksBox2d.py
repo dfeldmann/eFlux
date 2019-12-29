@@ -23,7 +23,6 @@
 # Modified: 21st December 2019
 
 import timeit
-import math
 import numpy as np
 import h5py
 
