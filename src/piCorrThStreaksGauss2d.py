@@ -131,10 +131,10 @@ for iFile in iFiles:
     import vorticity as v
     omegaR, omegaTh, omegaZ = v.omegaCyl(u_r, u_th, u_z, r, th, z)
     print('Time elapsed:', '{:3.1f}'.format(timeit.default_timer()-tvort), 'seconds')
-    
+
     # subtract mean velocity profile (1d) to obtain full (3d) fluctuating velocity field
     u_z = u_z - np.tile(u_zM, (nz, nth, 1)).T
-    
+
     # filter velocity field
     print('Filtering velocity components and mixed terms... ', end='', flush=True)
     tfilter = timeit.default_timer()
@@ -242,12 +242,12 @@ pin1    = pin1    / (nth*nz*nt)
 pin2    = pin2    / (nth*nz*nt)
 
 # compute RMS for normalisation
-uzRms     = np.sqrt(uz2 - uz1**2)
-uzFRms    = np.sqrt(uzF2 - uzF1**2)
+uzRms     = np.sqrt(uz2     - uz1**2)
+uzFRms    = np.sqrt(uzF2    - uzF1**2)
 omegaZRms = np.sqrt(omegaZ2 - omegaZ1**2)
-piRms     = np.sqrt(pi2 - pi1**2)
-pipRms    = np.sqrt(pip2 - pip1**2)
-pinRms    = np.sqrt(pin2 - pin1**2)
+piRms     = np.sqrt(pi2     - pi1**2)
+pipRms    = np.sqrt(pip2    - pip1**2)
+pinRms    = np.sqrt(pin2    - pin1**2)
 
 # normalise correlations with local RMS 
 acUz        = acUz        / (uzRms     * uzRms)
