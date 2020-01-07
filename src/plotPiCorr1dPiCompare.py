@@ -7,7 +7,7 @@
 # Usage:    python plotPiCorr1dPiCompare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 14th October 2019
+# Modified: 06th Januar 2020
 
 import timeit
 import numpy as np
@@ -70,36 +70,37 @@ print('With', nth, 'azimuthal (theta) grid points')
 print('With', nz, 'axial (z) grid points.')
 print('It is your responsibility to make sure, that all data sets are defined on the exact same grid.')
 
+# plotting
 if plot not in [1, 2]: sys.exit() # skip everything below
 print('Creating plot (using LaTeX)...')
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-#from mpl_toolkits.axes_grid1 import make_axes_locatable
-from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from mpl_toolkits.axes_grid1.colorbar import colorbar
-
+#from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+#from mpl_toolkits.axes_grid1.colorbar import colorbar
 mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.preamble'] = [
-r"\usepackage[utf8x]{inputenc}",
+r"\usepackage[utf8]{inputenc}",
 r"\usepackage[T1]{fontenc}",
+#r'\usepackage{lmodern, palatino, eulervm}',
+r'\usepackage{mathptmx}',
 r"\usepackage[detect-all]{siunitx}",
 r'\usepackage{amsmath, amstext, amssymb}',
-r'\usepackage{xfrac}',
-r'\usepackage{lmodern, palatino, eulervm}']
-mpl.rcParams.update({'font.family': 'sans-serif'})
-mpl.rcParams.update({'font.family': 'serif'})
-mpl.rcParams.update({'font.size': 6})
-mpl.rcParams.update({'lines.linewidth': 0.75})
-mpl.rcParams.update({'axes.linewidth': 0.75})
-mpl.rcParams['xtick.major.size'] = 2
-mpl.rcParams['xtick.major.width'] = 0.75
-mpl.rcParams['xtick.minor.size'] = 1
-mpl.rcParams['xtick.minor.width'] = 0.75
-mpl.rcParams['ytick.major.size'] = 2
-mpl.rcParams['ytick.major.width'] = 0.75
-mpl.rcParams['ytick.minor.size'] = 1
-mpl.rcParams['ytick.minor.width'] = 0.75
+r'\usepackage{xfrac}']
+#mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.family' : 'serif'})
+mpl.rcParams.update({'font.size' : 7})
+mpl.rcParams.update({'lines.linewidth'   : 0.75})
+mpl.rcParams.update({'lines.markersize'  : 1.75})
+mpl.rcParams.update({'axes.linewidth'    : 0.75})
+mpl.rcParams.update({'xtick.major.size'  : 2.00})
+mpl.rcParams.update({'xtick.major.width' : 0.75})
+mpl.rcParams.update({'xtick.minor.size'  : 1.00})
+mpl.rcParams.update({'xtick.minor.width' : 0.75})
+mpl.rcParams.update({'ytick.major.size'  : 2.00})
+mpl.rcParams.update({'ytick.major.width' : 0.75})
+mpl.rcParams.update({'ytick.minor.size'  : 1.00})
+mpl.rcParams.update({'ytick.minor.width' : 0.75})
 
 # create figure suitable for A4 format
 def mm2inch(*tupl):
@@ -108,7 +109,7 @@ def mm2inch(*tupl):
   return tuple(i/inch for i in tupl[0])
  else:
    return tuple(i/inch for i in tupl)
-fig = plt.figure(num=None, figsize=mm2inch(110.0, 120.0), dpi=300)
+fig = plt.figure(num=None, figsize=mm2inch(135.0, 45.0), dpi=150)
 
 # line colours appropriate for colour-blind
 Vermillion    = '#D55E00'
@@ -126,83 +127,42 @@ th = th * Re_tau
 z  =  z * Re_tau
 
 # plot azimuthal auto-correlation
-ax1 = plt.subplot2grid((3, 2), (0, 0), rowspan=1, colspan=1)
-ax1.set_xlim(left=-200.0, right=200.0)
-ax1.set_xticks([-200.0, -100.0, 0.0, 100.0, 200.0])
-ax1.set_xticks([])
-ax1.set_ylabel(r"$C_{u^{\prime}_{z} u^{\prime}_{z}}$")
-ax1.set_ylim(bottom=-0.3, top=1.0)
+ax1 = plt.subplot2grid((1, 2), (0, 0), rowspan=1, colspan=1)
+ax1.set_xlabel(r"$\Delta \theta r^{+}$ in $\sfrac{\nu}{u_{\tau}}$")
+ax1.set_xlim(left=0.0, right=150.0)
+ax1.set_xticks([0.0, 50.0, 100.0, 150.0])
+ax1.set_ylabel(r"$C_{\alpha\alpha}$")
+ax1.set_ylim(bottom=-0.25, top=1.0)
+ax1.set_yticks([0.0, 0.5, 1.0])
+ax1.minorticks_on()
 ax1.axhline(y=0.0, color=Grey)
 ax1.axvline(x=0.0, color=Grey)
-ax1.plot(th, cuzth,  color=Black,      linestyle='--', zorder=6, label=r"Unfiltered")
-ax1.plot(th, cuzthF, color=Black,      linestyle='-',  zorder=7, label=r"Fourier")
-ax1.plot(th, cuzthG, color=Vermillion, linestyle='-',  zorder=8, label=r"Gauss")
-ax1.plot(th, cuzthB, color=Blue,       linestyle='-',  zorder=9, label=r"Box")
+ax1.plot(th, cpithF, color=Black,       linestyle='-',  marker='^', markevery=[202, 212], zorder=7, label=r"$\alpha = \Pi$ (Fourier)")
+ax1.plot(th, cpithG, color=Vermillion,  linestyle='-',  marker='o', markevery=[201, 214], zorder=8, label=r"$\alpha = \Pi$ (Gauss)")
+ax1.plot(th, cpithB, color=Blue,        linestyle='-',  marker='s', markevery=[199, 210], zorder=9, label=r"$\alpha = \Pi$ (Box)")
+ax1.plot(th, cuzth,  color=BluishGreen, linestyle='-',  zorder=5, label=r"$\alpha = u^{\prime}_{z}$")
+ax1.plot(th, cozth,  color=BluishGreen, linestyle='--', zorder=6, label=r"$\alpha = \omega_{z}$")
+ax1.text(0.025, 0.045, r"a)", ha="left", va="bottom", transform=ax1.transAxes)
 
 # plot axial auto-correlation
-ax2 = plt.subplot2grid((3, 2), (0, 1), rowspan=1, colspan=1)
-ax2.set_xlim(left=-1000.0, right=1000.0)
-ax2.set_xticks([-1000.0, -500.0, 0.0, 500.0, 1000.0])
-ax2.set_xticklabels([])
-ax2.set_ylim(bottom=-0.3, top=1.0)
+ax2 = plt.subplot2grid((1, 2), (0, 1), rowspan=1, colspan=1)
+ax2.set_xlabel(r"$\Delta z^{+}$ in $\sfrac{\nu}{u_{\tau}}$")
+ax2.set_xlim(left=0.0, right=1500.0)
+ax2.set_xticks([0.0, 500.0, 1000.0, 1500.0])
+ax2.set_ylim(bottom=-0.25, top=1.0)
+ax2.set_yticks([0.0, 0.5, 1.0])
 ax2.set_yticklabels([])
+ax2.minorticks_on()
 ax2.axhline(y=0.0, color=Grey)
 ax2.axvline(x=0.0, color=Grey)
-ax2.plot(z, cuzz,  color=Black,      linestyle='--', zorder=6, label=r"Unfiltered")
-ax2.plot(z, cuzzF, color=Black,      linestyle='-',  zorder=7, label=r"Fourier")
-ax2.plot(z, cuzzG, color=Vermillion, linestyle='-',  zorder=8, label=r"Gauss")
-ax2.plot(z, cuzzB, color=Blue,       linestyle='-',  zorder=9, label=r"Box")
-ax2.legend(loc='lower left', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
+ax2.plot(z, cpizF, color=Black,       linestyle='-', marker='^', markevery=[1206], zorder=7, label=r"$\alpha = \Pi$ (Fourier)")
+ax2.plot(z, cpizG, color=Vermillion,  linestyle='-', marker='o', markevery=[1213], zorder=8, label=r"$\alpha = \Pi$ (Gauss)")
+ax2.plot(z, cpizB, color=Blue,        linestyle='-', marker='s', markevery=[1197], zorder=9, label=r"$\alpha = \Pi$ (Box)")
+ax2.plot(z, cuzz,  color=BluishGreen, linestyle='-',  zorder=5, label=r"$\alpha = u^{\prime}_{z}$")
+ax2.plot(z, cozz,  color=BluishGreen, linestyle='--', zorder=6, label=r"$\alpha = \omega_{z}$")
+ax2.text(0.025, 0.045, r"b)", ha="left", va="bottom", transform=ax2.transAxes)
+ax2.legend(loc='upper right', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
 
-# plot azimuthal auto-correlation
-ax3 = plt.subplot2grid((3, 2), (1, 0), rowspan=1, colspan=1)
-ax3.set_xlim(left=-200.0, right=200.0)
-ax3.set_xticks([-200.0, -100.0, 0.0, 100.0, 200.0])
-ax3.set_xticklabels([])
-ax3.set_ylabel(r"$C_{\omega_{z} \omega_{z}}$")
-ax3.set_ylim(bottom=-0.2, top=1.0)
-ax3.axhline(y=0.0, color=Grey)
-ax3.axvline(x=0.0, color=Grey)
-ax3.plot(th, cozth,  color=Black,      linestyle='--', zorder=6, label=r"Unfiltered")
-
-# plot axial auto-correlation
-ax4 = plt.subplot2grid((3, 2), (1, 1), rowspan=1, colspan=1)
-ax4.set_xlim(left=-1000.0, right=1000.0)
-ax4.set_xticks([-1000.0, -500.0, 0.0, 500.0, 1000.0])
-ax4.set_xticklabels([])
-ax4.set_ylim(bottom=-0.3, top=1.0)
-ax4.set_yticklabels([])
-ax4.axhline(y=0.0, color=Grey)
-ax4.axvline(x=0.0, color=Grey)
-ax4.plot(z, cozz,  color=Black,      linestyle='--', zorder=6, label=r"Unfiltered")
-ax4.legend(loc='lower left', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
-
-# plot azimuthal auto-correlation
-ax5 = plt.subplot2grid((3, 2), (2, 0), rowspan=1, colspan=1)
-ax5.set_xlabel(r"$\Delta\theta r^+$")
-ax5.set_xlim(left=-200.0, right=200.0)
-ax5.set_xticks([-200.0, -100.0, 0.0, 100.0, 200.0])
-ax5.set_ylabel(r"$C_{\Pi\Pi}$")
-ax5.set_ylim(bottom=-0.2, top=1.0)
-ax5.axhline(y=0.0, color=Grey)
-ax5.axvline(x=0.0, color=Grey)
-ax5.plot(th, cpithF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
-ax5.plot(th, cpithG, color=Vermillion, linestyle='-', zorder=8, label=r"Gauss")
-ax5.plot(th, cpithB, color=Blue,       linestyle='-', zorder=9, label=r"Box")
-
-# plot axial auto-correlation
-ax6 = plt.subplot2grid((3, 2), (2, 1), rowspan=1, colspan=1)
-ax6.set_xlabel(r"$\Delta z^+$")
-ax6.set_xlim(left=-1000.0, right=1000.0)
-ax6.set_xticks([-1000.0, -500.0, 0.0, 500.0, 1000.0])
-ax6.set_ylim(bottom=-0.3, top=1.0)
-ax6.set_yticklabels([])
-ax6.axhline(y=0.0, color=Grey)
-ax6.axvline(x=0.0, color=Grey)
-ax6.plot(z, cpizF, color=Black,      linestyle='-', zorder=7, label=r"Fourier")
-ax6.plot(z, cpizG, color=Vermillion, linestyle='-', zorder=8, label=r"Gauss")
-ax6.plot(z, cpizB, color=Blue,       linestyle='-', zorder=9, label=r"Box")
-ax6.legend(loc='lower left', frameon=False, fancybox=False, facecolor=None, edgecolor=None, framealpha=None)
 
 # plot mode interactive or pdf
 if plot == 1:
