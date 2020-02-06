@@ -29,33 +29,39 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
 # read 1d azimuthal cross-correlation with vortices for Fourier filtered eFlux from ascii file
 fnam = 'piCorrThStreaksFourier2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 th1d  = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation, only once
 puthF = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation omega_z with Pi
 
 # read 1d azimuthal cross-correlation with vortices for Gauss filtered eFlux from ascii file
 fnam = 'piCorrThStreaksGauss2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 puthG = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation omega_z with Pi
 
 # read 1d azimuthal cross-correlation with vortices for box filtered eFlux from ascii file
 fnam = 'piCorrThStreaksBox2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 puthB = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation omega_z with Pi
 
 # read 1d axial cross-correlation with vortices for Fourier filtered eFlux from ascii file
 fnam = 'piCorrZStreaksFourier2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 z1d  = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation, only once
 puzF = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation omega_z with Pi
 
 # read 1d axial cross-correlation with vortices for Gauss filtered eFlux from ascii file
 fnam = 'piCorrZStreaksGauss2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 puzG = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation omega_z with Pi
 
 # read 1d axial cross-correlation with vortices for box filtered eFlux from ascii file
 fnam = 'piCorrZStreaksBox2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 1d cross-correlation from', fnam)
 puzB = np.loadtxt(fnam)[:, 7] # 8th column: Cross-correlation omega_z with Pi
 
@@ -67,22 +73,22 @@ print('With', nz, 'axial (z) points')
 print('It is your responsibility to make sure that the 2d correlations are defined on the exact same grid.')
 
 # read 2d cross-correlation between eFlux and vortices for Fourier filter from ascii file
-fnam = 'piCorrThZStreaksFourier2d_pipe0002_00570000to01265000nt0140.dat'
 fnam = 'piCorrThZStreaksFourier2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlation from', fnam)
 Dt = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal displacement
 Dz = np.loadtxt(fnam)[:, 1] # 2nd column: Axial displacement
 f  = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation omega_z with Pi
 
 # read 2d cross-correlation between eFlux and vortices for Gauss filter from ascii file
-fnam = 'piCorrThZStreaksGauss2d_pipe0002_00570000to01265000nt0140.dat'
 fnam = 'piCorrThZStreaksGauss2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlation from', fnam)
 g  = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation omega_z with Pi
 
 # read 2d cross-correlation between eFlux and vortices for box filter from ascii file
-fnam = 'piCorrThZStreaksBox2d_pipe0002_00570000to01265000nt0140.dat'
 fnam = 'piCorrThZStreaksBox2d_pipe0002_01675000to01675000nt0001.dat'
+fnam = 'piCorrThZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
 print('Reading 2d cross-correlation from', fnam)
 b  = np.loadtxt(fnam)[:, 8] # 9th column: Cross-correlation omega_z with Pi
 
