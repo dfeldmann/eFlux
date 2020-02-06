@@ -30,7 +30,7 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
 # read velocity data from HDF5 file
 fpath = '../../outFiles/'
-fnam = fpath+'fields_pipe0002_01675000.h5'
+fnam = fpath+'field_pipe0002_01675000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading radial and axial velocity field from file", fnam)
 r  = np.array(f['grid/r']) # read grid only once
