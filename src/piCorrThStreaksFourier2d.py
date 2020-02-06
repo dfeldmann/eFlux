@@ -40,7 +40,7 @@ print('Compute eFlux (Fourier) and 1d azimuthal correlations with streaks for', 
 fpath = '../../outFiles/'
 
 # read grid from first HDF5 file
-fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFirst)+'.h5'
+fnam = fpath+'field_pipe0002_'+'{:08d}'.format(iFirst)+'.h5'
 print('Reading grid from', fnam, 'with:')
 f  = h5py.File(fnam, 'r')    # open hdf5 file for read only
 r  = np.array(f['grid/r'])   # radial co-ordinate
@@ -112,7 +112,7 @@ t0 = timeit.default_timer()
 for iFile in iFiles:
     
     # read flow field data from next HDF5 file
-    fnam = fpath+'fields_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
+    fnam = fpath+'field_pipe0002_'+'{:08d}'.format(iFile)+'.h5'
     f = h5py.File(fnam, 'r')
     print("Reading velocity field from file", fnam, end='', flush=True)
     u_r  = np.array(f['fields/velocity/u_r']).transpose(0,2,1)  # do modify transpose to match data structures
