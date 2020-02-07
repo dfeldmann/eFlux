@@ -21,8 +21,8 @@ import h5py
 
 # range of state files to read flow field data
 iFirst =  1675000
-iLast  =  1675000
-iStep  =     5000
+iLast  =  4070000 # 1675000
+iStep  =    10000 #    5000
 iFiles = range(iFirst, iLast+iStep, iStep)
 print('Compute instantaneous energy flux for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 

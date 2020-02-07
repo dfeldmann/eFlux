@@ -28,12 +28,12 @@ import numpy as np
 import h5py
 
 # plot mode: (0) none, (1) interactive, (2) pdf
-plot = 1
+plot = 0
 
 # range of state files to read flow field data
 iFirst =   570000
-iLast  =  1675000
-iStep  =     5000
+iLast  =  4070000 # 1675000
+iStep  =    10000 #    5000
 iFiles = range(iFirst, iLast+iStep, iStep)
 print('Compute eFlux (Fourier) and 1d azimuthal correlations with streaks for', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
