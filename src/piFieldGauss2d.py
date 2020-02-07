@@ -15,9 +15,7 @@
 # Modified: 16th August 2019
 
 import sys
-import os.path
 import timeit
-import math
 import numpy as np
 import h5py
 
