@@ -38,7 +38,7 @@ uz = np.array(f['fields/velocity/u_z']).transpose(0,2,1)
 f.close()
 
 # read mean velocity profiles from ascii file
-fnam = '../../onePointStatistics/statistics00570000to01675000nt0222.dat'
+fnam = '../../onePointStatistics/statistics00570000to04070000nt0351.dat'
 print('Reading mean velocity profiles from', fnam)
 uzM = np.loadtxt(fnam)[:, 3]
 

@@ -25,7 +25,7 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 fnamout = 'plotPiStatOverview.pdf'
 
 # read velocity statistics from ascii file
-fnam = '../../onePointStatistics/statistics00570000to01675000nt0222.dat'
+fnam = '../../onePointStatistics/statistics00570000to04070000nt0351.dat'
 print('Read velocity statistics from file', fnam, 'with')
 r      = np.loadtxt(fnam)[:, 0] # radial coordinate
 uzMean = np.loadtxt(fnam)[:, 3] # u_z mean

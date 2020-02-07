@@ -49,7 +49,7 @@ print(nth, 'azimuthal (th) points')
 print(nz, 'axial (z) points')
 
 # read mean velocity profiles from ascii file (do modify)
-fnam = '../../onePointStatistics/statistics00570000to01675000nt0222.dat'
+fnam = '../../onePointStatistics/statistics00570000to04070000nt0351.dat'
 print('Reading mean velocity profile from', fnam)
 rM   = np.loadtxt(fnam)[:, 0] # 1st column r
 u_zM = np.loadtxt(fnam)[:, 3] # 4th column <u_z>

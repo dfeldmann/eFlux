@@ -116,7 +116,7 @@ amccG = np.max(np.abs(ccG))            # Gauss max
 amccB = np.max(np.abs(ccB))            # Box max
 amcc  = np.max([amccF, amccG, amccB])  # all max
 print("Absolute maximum correlation value:", amcc)
-amcc  = 0.150                          # manual max
+amcc  = 0.122                          # manual max
 clm   = 0.100*amcc                     # set contour level threshold
 
 # convert spatial separation from outer to inner units
@@ -188,8 +188,8 @@ gs = fig.add_gridspec(nrows=4, ncols=2, hspace=0.0, wspace=0.0, width_ratios=[1,
 
 # my data range
 # define sub-set for plotting (Here in plus units)
-xmin = -500.00
-xmax =  800.00
+xmin = -300.00
+xmax =  600.00
 ymin = -180.00
 ymax =  180.00
 
@@ -255,10 +255,10 @@ ax4.text(0.08, 0.9, r"d)", ha="left", va="top", transform=ax4.transAxes) #, rota
 ax5 = fig.add_subplot(gs[3,0], sharex = ax1)
 ax5.set_xlabel(r"$\Delta z^+$ in $\sfrac{\nu}{u_{\tau}}$")
 ax5.set_xlim(left=xmin, right=xmax)
-ax5.set_xticks([-500, 0.0, 500, 1000])
+ax5.set_xticks([-300, 0.0, 300, 600])
 ax5.set_ylabel(r"$C_{\omega_{z}\Pi}$")
-ax5.set_ylim(bottom=-0.05, top=0.05)
-ax5.set_yticks([-0.3, -0.2, -0.1, 0.0])
+ax5.set_ylim(bottom=-0.01, top=0.01)
+ax5.set_yticks([-0.01, 0.00, 0.01])
 ax5.axhline(y=0.0, color=Grey)
 ax5.axvline(x=0.0, color=Grey)
 ax5.plot(z1d, puzF, color=Black,      linestyle='-', marker='^', markevery=[1169], zorder=7, label=r"Fourier")
