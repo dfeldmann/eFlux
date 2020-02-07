@@ -27,8 +27,8 @@ plot = 0
 
 # range of state files to read from flow field data
 iFirst =  570000
-iLast  = 1675000
-iStep  =    5000
+iLast  = 4070000 # 1675000
+iStep  =   10000 #    5000
 iFiles = range(iFirst, iLast+iStep, iStep)
 print('Compute energy flux one-point statistics from', len(iFiles), 'snapshot(s):', iFiles[0], 'to', iFiles[-1])
 
