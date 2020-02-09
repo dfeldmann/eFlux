@@ -7,8 +7,9 @@
 # Usage:    python plotPiStatComparePaper.py 
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 25th August 2019
+# Modified: 09th February 2020
 
+import sys
 import timeit
 import numpy as np
 import h5py
@@ -24,6 +25,7 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 # read one-point statistics for eflux Fourier filtered from ascii file
 fnam = 'piStatFourier2d_pipe0002_01675000to01675000nt0001.dat'
 fnam = 'piStatFourier2d_pipe0002_00570000to01675000nt0222.dat' 
+fnam = 'piStatFourier2d_pipe0002_00570000to04070000nt0351.dat' 
 print('Reading eFlux statistics from', fnam)
 eFMeanFourier = np.loadtxt(fnam)[:, 1]
 eFRmsFourier  = np.loadtxt(fnam)[:, 2]
@@ -33,6 +35,7 @@ eFFlatFourier = np.loadtxt(fnam)[:, 4]
 # read one-point statistics for eflux Gauss filtered from ascii file
 fnam = 'piStatGauss2d_pipe0002_01675000to01675000nt0001.dat'
 fnam = 'piStatGauss2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piStatGauss2d_pipe0002_00570000to04070000nt0351.dat' 
 print('Reading eFlux statistics from', fnam)
 eFMeanGauss = np.loadtxt(fnam)[:, 1]
 eFRmsGauss  = np.loadtxt(fnam)[:, 2]
@@ -42,6 +45,7 @@ eFFlatGauss = np.loadtxt(fnam)[:, 4]
 # read one-point statistics for eflux box filtered from ascii file
 fnam = 'piStatBox2d_pipe0002_01675000to01675000nt0001.dat'
 fnam = 'piStatBox2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piStatBox2d_pipe0002_00570000to04070000nt0351.dat' 
 print('Reading eFlux statistics from', fnam)
 r = np.loadtxt(fnam)[:, 0] # radial grid only once
 eFMeanBox = np.loadtxt(fnam)[:, 1]
