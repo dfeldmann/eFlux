@@ -7,8 +7,9 @@
 # Usage:    python plotPiCorr1dPiCompare.py
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 06th Januar 2020
+# Modified: 09th February 2020
 
+import sys
 import timeit
 import numpy as np
 import h5py
@@ -23,6 +24,7 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 
 # read azimuthal auto-correlations for Fourier filtered eFlux from ascii file
 fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrThStreaksFourier2d_pipe0002_00570000to04070000nt0351.dat'
 print('Reading azimuthal auto correlations for Fourier filtered eFlux', fnam)
 th     = np.loadtxt(fnam)[:, 0] # 1st column: Azimuthal separation DeltaTh
 cuzth  = np.loadtxt(fnam)[:, 1] # 2nd column: Auto-correlation u'_z    with u'_z
@@ -32,18 +34,21 @@ cpithF = np.loadtxt(fnam)[:, 4] # 5th column: Auto-correlation Pi      with Pi
 
 # read azimuthal auto-correlations for Gauss filtered eFlux from ascii file
 fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrThStreaksGauss2d_pipe0002_00570000to04070000nt0351.dat'
 print('Reading azimuthal auto correlations for Gauss filtered eFlux', fnam)
 cuzthG = np.loadtxt(fnam)[:, 2] # 3rd column: Auto-correlation u'_zF with u'_zF
 cpithG = np.loadtxt(fnam)[:, 4] # 5th column: Auto-correlation Pi    with Pi
 
 # read azimuthal auto-correlations for box filtered eFlux from ascii file
 fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrThStreaksBox2d_pipe0002_00570000to04070000nt0351.dat'
 print('Reading azimuthal auto correlations for box filtered eFlux', fnam)
 cuzthB = np.loadtxt(fnam)[:, 2] # 3rd column: Auto-correlation u'_zF with u'_zF
 cpithB = np.loadtxt(fnam)[:, 4] # 5th column: Auto-correlation Pi    with Pi
 
 # read axial auto correlations Fourier filtered eFlux from ascii file
 fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrZStreaksFourier2d_pipe0002_00570000to04070000nt0351.dat'
 print('Reading axial auto correlations for Fourier filtered eFlux', fnam)
 z     = np.loadtxt(fnam)[:, 0] # 1st column: Axial separation DeltaZ
 cuzz  = np.loadtxt(fnam)[:, 1] # 2nd column: Auto-correlation  u'_z    with u'_z
@@ -53,12 +58,14 @@ cpizF = np.loadtxt(fnam)[:, 4] # 5th column: Auto-correlation  Pi      with Pi
 
 # read axial auto correlations Gauss filtered eFlux from ascii file
 fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrZStreaksGauss2d_pipe0002_00570000to04070000nt0351.dat'
 print('Reading axial auto correlations for Gauss filtered eFlux', fnam)
 cuzzG = np.loadtxt(fnam)[:, 2] # 3rd column: Auto-correlation  u'_zF with u'_zF
 cpizG = np.loadtxt(fnam)[:, 4] # 5th column: Auto-correlation  Pi    with Pi
 
 # read axial auto correlations box filtered eFlux from ascii file
 fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to01675000nt0222.dat'
+fnam = 'piCorrZStreaksBox2d_pipe0002_00570000to04070000nt0351.dat'
 print('Reading axial auto correlations for box filtered eFlux', fnam)
 cuzzB = np.loadtxt(fnam)[:, 2] # 3rd column: Auto-correlation  u'_zF with u'_zF
 cpizB = np.loadtxt(fnam)[:, 4] # 5th column: Auto-correlation  Pi    with Pi
