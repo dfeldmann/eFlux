@@ -60,7 +60,7 @@ def fourier2dThZ(u, rPos, lambdaTh, lambdaZ, th, z, rect):
     # if report == 1:
     # printKernel() please implement output in form of plot and ascii file
        
-    # apply 2d filter kernel in Fourier space via FFT
+    # apply 2d Fourier filter kernel in Fourier space via FFT
     uFiltered = np.fft.ifft2(np.fft.fft2(u)*g2d)
     
     return uFiltered.real
@@ -97,47 +97,58 @@ def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
     return uFiltered
 
 def gauss2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
-# 2d Gauss filter for 2d data slices in
-# wall-parallel (theta-z) planes of a cylindrical co-ordinate frame work
-# (r,th,z). Applied in Fourier space via FFT.
-# Parameters:
-# u: 2d scalar field
-# rPos: radial location of wall-parallel data slice
-# lambdaTh: filter width in theta direction, arc length in unit distance
-# lambdaZ: filter width in z direction
-# th: 1d grid vector, theta co-ordinate in unit radian
-# z: 1d grid vector, z co-ordinate in unit length
-# Returns: A 2d scalar field which is 2d-filtered in theta and z direction
-
-    # sample spacing in each direction in unit length (pipe radii R, gap width d, etc)
-    deltaTh = (th[1] - th[0]) * rPos # equidistant but r dependent
-    deltaZ  =  (z[1] -  z[0])        # equidistant
-
-    # set-up wavenumber vector in units of cycles per unit distance (1/R)
-    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous direction theta #=kX=kappaX/(2*pi)
-    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous direction z
-
+    # 2d Gauss filter applied to a 2d data slice in a wall-parallel th-z-plane defined
+    # in a cylindrical co-ordinate frame work (r,th,z). Applied in Fourier space via
+    # FFT and convolution theorem.
+    # Input parameters:
+    # u:         2d scalar field, e.g. one velocity component
+    # lambdaTh:  filter width in theta direction, arc length in unit length
+    # lambdaZ:   filter width in z direction in unit length
+    # th:        1d azimuthal (th) grid vector in unit radian
+    # z:         1d axial (z) grid vector in unit length
+    # rect:      switch for rectangular or elliptical (circular) kernel formulation
+    # Returns:
+    # uFiltered: 2d scalar field, which is 2d-filtered in theta and z direction
+    
+    # set-up sample spacing in unit length (pipe radii R, gap width d, etc)
+    deltaTh = (th[1]-th[0])*rPos # equidistant but r dependent
+    deltaZ  = ( z[1]- z[0])      # equidistant
+    
+    # set-up wavenumber vector in unit cycle per length (1/R)
+    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous azimuthal (th) direction
+    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous axial (z) direction
+    
+    # set-up wavenumber vector in unit radian per length (2pi/R)
+    kappaTh = 2.0*np.pi*kTh # homogeneous azimuthal (th) direction
+    kappaZ  = 2.0*np.pi*kZ  # homogeneous axial (z) direction
+    
     # construct 2d filter kernel
-    gTh = np.exp(-((2*np.pi*kTh)**2*lambdaTh**2/24)) # Gauss exp kernel in theta direction
-    gZ  = np.exp(-((2*np.pi*kZ )**2*lambdaZ**2/24))   # Gauss exp kernel in axial direction
-    g2d = np.outer(gTh, gZ)                          # 2d filter kernel in theta-z plane
-
-    # apply 2d filter kernel in Fourier space via FFT
+    gTh = np.exp((kappaTh*lambdaTh)**2.0/-24.0) # 1d azimuthal (th) kernel, Gaussian
+    gZ  = np.exp((kappaZ *lambdaZ )**2.0/-24.0) # 1d axial (z) kernel, Gaussian
+    g2d = np.outer(gTh, gZ)                     # 2d kernel in th-z-plane
+    
+    # report kernel
+    # if report == 1:
+    # printKernel() please implement output in form of plot and ascii file
+                
+    # apply 2d Gauss filter kernel in Fourier space via FFT
     uFiltered=np.fft.ifft2(np.fft.fft2(u)*g2d)
+    
     return uFiltered.real
 
-
 def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
-# 2d Gauss filter for 3d data in a cylindrical
-# co-ordinate frame work (r,th,z). Applied in Fourier space via FFT.
-# Parameters:
-# u: 3d scalar field
-# lambdaTh: filter width in theta direction, arc length in unit distance
-# lambdaZ: filter width in z direction
-# r: 1d grid vector, radial (wall-normal) co-ordinate in unit length
-# th: 1d grid vector, azimuthal co-ordinate in unit radian
-# z: 1d grid vector, axial co-ordinate in unit length
-# Returns: A 3d scalar field which is 2d-filtered in theta and z direction only
+    # 2d Gauss filter applied to a 3d data set defined in a cylindrical co-ordinate frame work
+    # (r, th, z). Wrapper function, which simply calls the function gauss2dThZ() multiple times
+    # (in parallel) for every wall normal loaction (r).
+    # Input parameters:
+    # u:         2d scalar field, e.g. one velocity component
+    # lambdaTh:  filter width in theta direction, arc length in unit length
+    # lambdaZ:   filter width in z direction in unit length
+    # r:         1d radial (r) grid vector in unit length
+    # th:        1d azimuthal (th) grid vector in unit radian
+    # z:         1d axial (z) grid vector in unit length
+    # Returns:
+    # uFiltered: 3d scalar field, which is 2d-filtered in theta and z direction for every radial location (r)
 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -156,29 +167,34 @@ def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
     return uFiltered
 
 def box2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
-# 2d Box filter for 2d data slices in
-# wall-parallel (theta-z) planes of a cylindrical co-ordinate frame work
-# (r,th,z). Applied in Fourier space via FFT.
-# Parameters:
-# u: 2d scalar field
-# rPos: radial location of wall-parallel data slice
-# lambdaTh: filter width in theta direction, arc length in unit distance
-# lambdaZ: filter width in z direction
-# th: 1d grid vector, theta co-ordinate in unit radian
-# z: 1d grid vector, z co-ordinate in unit length
-# Returns: A 2d scalar field which is 2d-filtered in theta and z direction
+    # 2d box filter applied to a 2d data slice in a wall-parallel th-z-plane defined in a cylindrical
+    # co-ordinate frame work (r,th,z). Applied in Fourier space via FFT and convolution theorem.
+    # Input parameters:
+    # u:         2d scalar field, e.g. one velocity component
+    # rPos:      radial location (r) of wall-parallel data slice
+    # lambdaTh:  filter width in theta direction, arc length in unit length
+    # lambdaZ:   filter width in z direction in unit length
+    # th:        1d azimuthal (th) grid vector in unit radian
+    # z:         1d axial (z) grid vector in unit length
+    # rect:      switch for rectangular or elliptical (circular) kernel formulation
+    # Returns:
+    # uFiltered: 2d scalar field, which is 2d-filtered in theta and z direction
 
-    # sample spacing in each direction in unit length (pipe radii R, gap width d, etc)
-    deltaTh = (th[1] - th[0]) * rPos # equidistant but r dependent
-    deltaZ  =  (z[1] -  z[0])        # equidistant
-
-    # set-up wavenumber vector in units of cycles per unit distance (1/R)
-    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous direction theta #=kX=kappaX/(2*pi)
-    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous direction z
-
+    # set-up sample spacing in unit length (pipe radii R, gap width d, etc)
+    deltaTh = (th[1]-th[0])*rPos # equidistant but r dependent
+    deltaZ  = ( z[1]- z[0])      # equidistant
+    
+    # set-up wavenumber vector in unit cycle per length (1/R)
+    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous azimuthal (th) direction
+    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous axial (z) direction
+    
+    # set-up wavenumber vector in unit radian per length (2pi/R)
+    kappaTh = 2.0*np.pi*kTh # homogeneous azimuthal (th) direction
+    kappaZ  = 2.0*np.pi*kZ  # homogeneous axial (z) direction
+    
     # construct 2d filter kernel
     gTh = np.sinc(kTh*lambdaTh) # Box sinc kernel in theta direction
-    gZ  = np.sinc(kZ*lambdaZ)   # Box sinc kernel in axial direction
+    gZ  = np.sinc(kZ *lambdaZ)  # Box sinc kernel in axial direction
     g2d = np.outer(gTh, gZ)     # 2d filter kernel in theta-z plane
 
     # apply 2d filter kernel in Fourier space via FFT
