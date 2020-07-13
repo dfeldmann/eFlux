@@ -28,7 +28,7 @@ Re_tau =  180.4 # Shear Reynolds number Re_tau = u_tau * R / nu
 # read velocity data from HDF5 file
 fpath = '../../outFiles/'
 fnam = fpath+'field_pipe0002_01675000.h5'
-#fnam = fpath+'field_pipe0002_04570000.h5'
+fnam = fpath+'field_pipe0002_04570000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading axial velocity field from file", fnam)
 r  = np.array(f['grid/r'])    # radial co-ordinate
@@ -48,7 +48,7 @@ uz  = uz  - np.tile(uzM, (len(z), len(th), 1)).T
 
 # read box filtered field from file
 fnam = '../40x75/filteredFieldBox2d_pipe0002_01675000.h5'
-#fnam = '../40x75/filteredFieldBox2d_pipe0002_04570000.h5'
+fnam = '../40x75/filteredFieldBox2d_pipe0002_04570000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading box filtered field from file", fnam)
 uzB = np.array(f['fields/velocity/u_zF']).transpose(0,2,1)
@@ -56,7 +56,7 @@ f.close()
 
 # read Fourier filtered field from file
 fnam = '../40x75/filteredFieldFourier2d_pipe0002_01675000.h5'
-#fnam = '../40x75/filteredFieldFourier2d_pipe0002_04570000.h5'
+fnam = '../40x75/filteredFieldFourier2d_pipe0002_04570000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading Fourier filtered field from file", fnam)
 uzF = np.array(f['fields/velocity/u_zF']).transpose(0,2,1)
@@ -64,7 +64,7 @@ f.close()
 
 # read Gauss filtered field from file
 fnam = '../40x75/filteredFieldGauss2d_pipe0002_01675000.h5'
-#fnam = '../40x75/filteredFieldGauss2d_pipe0002_04570000.h5'
+fnam = '../40x75/filteredFieldGauss2d_pipe0002_04570000.h5'
 f = h5py.File(fnam, 'r')
 print("Reading Gauss filtered field from file", fnam)
 uzG = np.array(f['fields/velocity/u_zF']).transpose(0,2,1)
