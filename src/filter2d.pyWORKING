@@ -15,41 +15,53 @@ import multiprocessing
 from joblib import Parallel, delayed
 
 def fourier2dThZ(u, rPos, lambdaTh, lambdaZ, th, z, rect):
-
-
-
-
-
-
-
-
-
-
-
-
-
+#--------------------------------------------------------------------------
+# 2d Fourier space cut-off (aka sharp spectral) filter for 2d data slices in
+# wall-parallel (theta-z) planes of a cylindrical co-ordinate frame work
+# (r,th,z). Applied in Fourier space via FFT.
+#
+# Parameters:
+# u: 2d scalar field
+# rPos: radial location of wall-parallel data slice
+# lambdaTh: filter width in theta direction, arc length in unit distance
+# lambdaZ: filter width in z direction
+# th: 1d grid vector, theta co-ordinate in unit radian
+# z: 1d grid vector, z co-ordinate in unit length
+# rect: switch for rectangular or elliptical (circular) kernel formulation
+#
+# Returns: A 2d scalar field which is 2d-filtered in theta and z direction
+#-------------------------------------------------------------------------
 
     # sample spacing in each direction in unit length (pipe radii R, gap width d, etc)
-    deltaTh = (th[1]-th[0])*rPos # equidistant but r dependent
-    deltaZ  = ( z[1]- z[0])      # equidistant
+    deltaTh = (th[1] - th[0]) * rPos # equidistant but r dependent
+    deltaZ  = ( z[1] -  z[0])        # equidistant
 
     # set-up wavenumber vector in units of cycles per unit distance (1/R)
     kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous direction theta
     kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous direction z
 
-
-
-
-
     # define cut-off wavenumber in units of cycles per unit distance (1/R)
+    # --------------------------------------------------------------------
+    # 
+    # To be consistent with Pope we take the cutoff wave no. as given on page no. 563
+    # kappaC=pi/lambda, where 'lambda' is the filter width, and since Python is giving out 
+    # the values of 'k' in cycles per metre, So, we multiply 'k' with '2pi' to get the 
+    # the similar formulation as given in Pope (Page 563)
+
     kappaThC = np.pi/lambdaTh # Cutoff wave no. in azimuthal(Th) direction
     kappaZC  = np.pi/lambdaZ  # Cutoff wave no. in axial(z)      direction
 
     # construct 2d filter kernel
+    # --------------------------------------------------------------------
+    #
+    # As states earlier to be consistent with Pope we multilply the wave no. 'kTh', obtained
+    # by using the Python's fft module, with '2pi' in the definition of Heaviside function.
+    # -------------------------------------------------------------------- 
     if rect == 1:
      gTh = np.heaviside(kappaThC - abs(2.0*np.pi*kTh), 1) # 1d step function in theta direction
      gZ  = np.heaviside(kappaZC  - abs(2.0*np.pi*kZ),  1) # 1d step function in z direction
      g2d = np.outer(gTh, gZ)                # 2d rectangular step function in theta-z-plane
+
     else:
      # please implement elliptic kernel here
      sys.exit('\nERROR: Set rect=1. Circular/elliptical kernel not implemented yet...')
@@ -60,6 +72,20 @@ def fourier2dThZ(u, rPos, lambdaTh, lambdaZ, th, z, rect):
     return uFiltered.real
 
 def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
+#--------------------------------------------------------------------------
+# 2d Fourier space cut-off (aka sharp spectral) filter for 3d data in a cylindrical
+# co-ordinate frame work (r,th,z). Applied in Fourier space via FFT.
+#
+# Parameters:
+# u: 3d scalar field
+# lambdaTh: filter width in theta direction, arc length in unit distance
+# lambdaZ: filter width in z direction
+# r: 1d grid vector, radial (wall-normal) co-ordinate in unit length
+# th: 1d grid vector, azimuthal co-ordinate in unit radian
+# z: 1d grid vector, axial co-ordinate in unit length
+#
+# Returns: A 3d scalar field which is 2d-filtered in theta and z direction only
+#--------------------------------------------------------------------------
 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -79,6 +105,17 @@ def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
 
 
 def gauss2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
+# 2d Gauss filter for 2d data slices in
+# wall-parallel (theta-z) planes of a cylindrical co-ordinate frame work
+# (r,th,z). Applied in Fourier space via FFT.
+# Parameters:
+# u: 2d scalar field
+# rPos: radial location of wall-parallel data slice
+# lambdaTh: filter width in theta direction, arc length in unit distance
+# lambdaZ: filter width in z direction
+# th: 1d grid vector, theta co-ordinate in unit radian
+# z: 1d grid vector, z co-ordinate in unit length
+# Returns: A 2d scalar field which is 2d-filtered in theta and z direction
 
     # sample spacing in each direction in unit length (pipe radii R, gap width d, etc)
     deltaTh = (th[1] - th[0]) * rPos # equidistant but r dependent
@@ -95,12 +132,20 @@ def gauss2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
 
     # apply 2d filter kernel in Fourier space via FFT
     uFiltered=np.fft.ifft2(np.fft.fft2(u)*g2d)
-
     return uFiltered.real
 
 
-
 def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
+# 2d Gauss filter for 3d data in a cylindrical
+# co-ordinate frame work (r,th,z). Applied in Fourier space via FFT.
+# Parameters:
+# u: 3d scalar field
+# lambdaTh: filter width in theta direction, arc length in unit distance
+# lambdaZ: filter width in z direction
+# r: 1d grid vector, radial (wall-normal) co-ordinate in unit length
+# th: 1d grid vector, azimuthal co-ordinate in unit radian
+# z: 1d grid vector, axial co-ordinate in unit length
+# Returns: A 3d scalar field which is 2d-filtered in theta and z direction only
 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -118,9 +163,18 @@ def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
 
     return uFiltered
 
-
-
 def box2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
+# 2d Box filter for 2d data slices in
+# wall-parallel (theta-z) planes of a cylindrical co-ordinate frame work
+# (r,th,z). Applied in Fourier space via FFT.
+# Parameters:
+# u: 2d scalar field
+# rPos: radial location of wall-parallel data slice
+# lambdaTh: filter width in theta direction, arc length in unit distance
+# lambdaZ: filter width in z direction
+# th: 1d grid vector, theta co-ordinate in unit radian
+# z: 1d grid vector, z co-ordinate in unit length
+# Returns: A 2d scalar field which is 2d-filtered in theta and z direction
 
     # sample spacing in each direction in unit length (pipe radii R, gap width d, etc)
     deltaTh = (th[1] - th[0]) * rPos # equidistant but r dependent
@@ -141,8 +195,17 @@ def box2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
     return uFiltered.real
 
 
-
 def box2d(u, lambdaTh, lambdaZ, r, th, z):
+# 2d Box filter for 3d data in a cylindrical
+# co-ordinate frame work (r,th,z). Applied in Fourier space via FFT.
+# Parameters:
+# u: 3d scalar field
+# lambdaTh: filter width in theta direction, arc length in unit distance
+# lambdaZ: filter width in z direction
+# r: 1d grid vector, radial (wall-normal) co-ordinate in unit length
+# th: 1d grid vector, azimuthal co-ordinate in unit radian
+# z: 1d grid vector, axial co-ordinate in unit length
+# Returns: A 3d scalar field which is 2d-filtered in theta and z direction only
 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -159,3 +222,4 @@ def box2d(u, lambdaTh, lambdaZ, r, th, z):
     #uFiltered[i] = box2dThZ(u[i,:,:], r[i], lambdaTh, lambdaZ, th, z)
 
     return uFiltered
+

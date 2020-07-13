@@ -103,9 +103,9 @@ uz2     = 0
 uzF1    = 0 # filtered streaks
 uzF2    = 0
 uzp1    = 0 # high-speed streaks only (Positive)
-uzp1    = 0
+uzp2    = 0
 uzn1    = 0 # low-speed streaks only (Negative)
-uzn1    = 0
+uzn2    = 0
 omegaZ1 = 0 # streamwise vortices
 omegaZ2 = 0
 pi1     = 0 # total flux
@@ -214,10 +214,9 @@ for iFile in iFiles:
         uzF1    = uzF1    + np.sum(uzF1d)
         uzF2    = uzF2    + np.sum(uzF1d**2)
         uzp1    = uzp1    + np.sum(uzp1d)
-        uzn1    = unp1    + np.sum(uzn1d)
-        uzn2    = unp2    + np.sum(uzn1d**2)
-        omegaZ1 = omegaZ1 + np.sum(omegaZ1d)
         uzp2    = uzp2    + np.sum(uzp1d**2)
+        uzn1    = uzn1    + np.sum(uzn1d)
+        uzn2    = uzn2    + np.sum(uzn1d**2)
         omegaZ1 = omegaZ1 + np.sum(omegaZ1d)
         omegaZ2 = omegaZ2 + np.sum(omegaZ1d**2)
         pi1     = pi1     + np.sum(pi1d)
@@ -336,8 +335,7 @@ f.write("# 14th column: Cross-correlation omega_z  with Pi < 0\n")
 f.write("# 15th column: Cross-correlation u'_z > 0 with Pi\n")
 f.write("# 16th column: Cross-correlation u'_z < 0 with Pi\n")
 for i in range(nth):
-    f.write(('{:23.16e}'*16+'\n').format(DeltaTh[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i], ccUzpPi[i], ccUznPi[i]))
-#  f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaTh[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i]))
+    f.write(('{:24.16e}'*16+'\n').format(DeltaTh[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i], ccUzpPi[i], ccUznPi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
 

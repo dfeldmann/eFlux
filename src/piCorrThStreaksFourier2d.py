@@ -10,8 +10,8 @@
 #           Additionally, compute the vorticity vector field (omega) for each
 #           snapshot. Finally, compute one-dimensional two-point correlations
 #           in azimuthal (theta) direction; auto-correlations for the original
-#           (u'_z) and filtered (u'_zF) streamwise velocity component
-#           (representing streaks), for the axial vorticity component
+#           (u'_z) and the filtered (u'_zF) streamwise velocity component
+#           (representing streaks), for the axial vorticity component (omega_z,
 #           (representing streamwise alligned vortices) and for the energy flux,
 #           cross-correlations for all of these quantities with the energy flux.
 #           Do statistics over all axial (z) locations and all snapshots, and
