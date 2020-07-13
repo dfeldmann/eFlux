@@ -16,10 +16,12 @@ import numpy as np
 import multiprocessing
 from joblib import Parallel, delayed
 
+
+
 def fourier2dThZ(u, rPos, lambdaTh, lambdaZ, th, z, rect):
-    # 2d Fourier filter (aka sharp spectral cut-off) applied to a 2d data slice in a
-    # wall-parallel th-z-plane defined in a cylindrical co-ordinate frame work (r,th,z).
-    # Applied in Fourier space via FFT and convolution theorem.
+    # 2d Fourier filter (aka sharp spectral cut-off) applied to a 2d data slice
+    # in a wall-parallel th-z-plane defined in a cylindrical co-ordinate frame
+    # work (r,th,z). Applied in Fourier space via FFT and convolution theorem.
     # Input parameters:
     # u:         2d scalar field, e.g. one velocity component
     # rPos:      radial location (r) of wall-parallel data slice
@@ -28,47 +30,46 @@ def fourier2dThZ(u, rPos, lambdaTh, lambdaZ, th, z, rect):
     # th:        1d azimuthal (th) grid vector in unit radian
     # z:         1d axial (z) grid vector in unit length
     # rect:      switch for rectangular or elliptical (circular) kernel formulation
-    # Returns:
+    # Output parameters:
     # uFiltered: 2d scalar field, which is 2d-filtered in theta and z direction
 
-    # set-up sample spacing in unit length (pipe radii R, gap width d, etc)
-    deltaTh = (th[1]-th[0])*rPos # equidistant but r dependent
-    deltaZ  = ( z[1]- z[0])      # equidistant
-    
+    # set-up sample spacing in unit length (pipe radius R)
+    deltaTh = (th[1]-th[0])*rPos   # equidistant but r dependent
+    deltaZ  = ( z[1]- z[0])        # equidistant
+
     # set-up wavenumber vector in unit cycle per length (1/R)
-    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous azimuthal (th) direction
-    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous axial (z) direction
-    
+    kTh = np.fft.fftfreq(len(th), d=deltaTh)   # homogeneous azimuthal (th) direction
+    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)    # homogeneous axial (z) direction
+
     # set-up wavenumber vector in unit radian per length (2pi/R)
-    kappaTh = 2.0*np.pi*kTh # homogeneous azimuthal (th) direction
-    kappaZ  = 2.0*np.pi*kZ  # homogeneous axial (z) direction
-    
+    kappaTh = 2.0*np.pi*kTh   # homogeneous azimuthal (th) direction
+    kappaZ  = 2.0*np.pi*kZ    # homogeneous axial (z) direction
+
     # define cut-off wavenumber in unit radian per length (2pi/R)
-    kappaThC = np.pi/lambdaTh # azimuthal (th) direction
-    kappaZC  = np.pi/lambdaZ  # axial (z) direction
-    
+    kappaThC = np.pi/lambdaTh   # azimuthal (th) direction
+    kappaZC  = np.pi/lambdaZ    # axial (z) direction
+
     # construct 2d filter kernel
     if rect == 1:
-       gTh = np.heaviside(kappaThC-abs(kappaTh), 1) # 1d azimuthal (th) kernel, step function
-       gZ  = np.heaviside(kappaZC -abs(kappaZ),  1) # 1d axial (z) kernel, step function
-       g2d = np.outer(gTh, gZ)                      # 2d (rectangular) kernel in th-z-plane
+     gTh = np.heaviside(kappaThC-abs(kappaTh), 1)   # 1d azimuthal (th) kernel, step function
+     gZ  = np.heaviside(kappaZC -abs(kappaZ),  1)   # 1d axial (z) kernel, step function
+     g2d = np.outer(gTh, gZ)                        # 2d (rectangular) kernel in th-z-plane
     else:
-       # please implement elliptical kernel here
-       sys.exit('\nERROR: Set rect=1. Circular/elliptical kernel not implemented yet...'
-    
-    # report kernel
-    # if report == 1:
-    # printKernel() please implement output in form of plot and ascii file
-       
+     # please implement elliptical kernel here
+     sys.exit('\nERROR: Set rect=1. Circular/elliptical kernel not implemented yet...')
+
     # apply 2d Fourier filter kernel in Fourier space via FFT
-    uFiltered = np.fft.ifft2(np.fft.fft2(u)*g2d)
-    
+    uFiltered = np.fft.ifft2(np.fft.fft2(u) * g2d)
+ 
     return uFiltered.real
 
+
+
 def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
-    # 2d Fourier filter (aka sharp spectral cut-off) applied to a 3d data set defined in a
-    # cylindrical co-ordinate frame work (r, th, z). Wrapper function, which simply calls the
-    # function fourier2dThZ() multiple times (in parallel) for every wall normal loaction (r).
+    # 2d Fourier filter (aka sharp spectral cut-off) applied to a 3d data set
+    # defined in a cylindrical co-ordinate frame work (r, th, z). Wrapper
+    # function, which simply calls the function fourier2dThZ() multiple times
+    # (in parallel) for every wall normal loaction (r).
     # Input parameters:
     # u:         2d scalar field, e.g. one velocity component
     # lambdaTh:  filter width in theta direction, arc length in unit length
@@ -77,8 +78,9 @@ def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
     # th:        1d azimuthal (th) grid vector in unit radian
     # z:         1d axial (z) grid vector in unit length
     # rect:      switch for rectangular or elliptical (circular) kernel formulation
-    # Returns:
-    # uFiltered: 3d scalar field, which is 2d-filtered in theta and z direction for every radial location (r)
+    # Output parameters:
+    # uFiltered: 3d scalar field, which is 2d-filtered in theta and z direction
+    #            for every radial location (r)
                 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -96,10 +98,12 @@ def fourier2d(u, lambdaTh, lambdaZ, r, th, z, rect=1):
     
     return uFiltered
 
+
+
 def gauss2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
-    # 2d Gauss filter applied to a 2d data slice in a wall-parallel th-z-plane defined
-    # in a cylindrical co-ordinate frame work (r,th,z). Applied in Fourier space via
-    # FFT and convolution theorem.
+    # 2d Gauss filter applied to a 2d data slice in a wall-parallel th-z-plane
+    # defined in a cylindrical co-ordinate frame work (r,th,z). Applied in
+    # Fourier space via FFT and convolution theorem.
     # Input parameters:
     # u:         2d scalar field, e.g. one velocity component
     # lambdaTh:  filter width in theta direction, arc length in unit length
@@ -107,39 +111,42 @@ def gauss2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
     # th:        1d azimuthal (th) grid vector in unit radian
     # z:         1d axial (z) grid vector in unit length
     # rect:      switch for rectangular or elliptical (circular) kernel formulation
-    # Returns:
+    # Output parameters:
     # uFiltered: 2d scalar field, which is 2d-filtered in theta and z direction
     
     # set-up sample spacing in unit length (pipe radii R, gap width d, etc)
-    deltaTh = (th[1]-th[0])*rPos # equidistant but r dependent
-    deltaZ  = ( z[1]- z[0])      # equidistant
+    deltaTh = (th[1]-th[0])*rPos   # equidistant but r dependent
+    deltaZ  = ( z[1]- z[0])        # equidistant
     
     # set-up wavenumber vector in unit cycle per length (1/R)
-    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous azimuthal (th) direction
-    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous axial (z) direction
+    kTh = np.fft.fftfreq(len(th), d=deltaTh)   # homogeneous azimuthal (th) direction
+    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)    # homogeneous axial (z) direction
     
     # set-up wavenumber vector in unit radian per length (2pi/R)
-    kappaTh = 2.0*np.pi*kTh # homogeneous azimuthal (th) direction
-    kappaZ  = 2.0*np.pi*kZ  # homogeneous axial (z) direction
+    kappaTh = 2.0*np.pi*kTh   # homogeneous azimuthal (th) direction
+    kappaZ  = 2.0*np.pi*kZ    # homogeneous axial (z) direction
     
-    # construct 2d filter kernel
-    gTh = np.exp((kappaTh*lambdaTh)**2.0/-24.0) # 1d azimuthal (th) kernel, Gaussian
-    gZ  = np.exp((kappaZ *lambdaZ )**2.0/-24.0) # 1d axial (z) kernel, Gaussian
-    g2d = np.outer(gTh, gZ)                     # 2d kernel in th-z-plane
+    # construct 2d filter kernel in Fourier space
+    gTh = np.exp((kappaTh*lambdaTh)**2.0/-24.0)   # 1d azimuthal (th) kernel, Gaussian
+    gZ  = np.exp((kappaZ *lambdaZ )**2.0/-24.0)   # 1d axial (z) kernel, Gaussian
+    g2d = np.outer(gTh, gZ)                       # 2d kernel in th-z-plane
     
     # report kernel
     # if report == 1:
     # printKernel() please implement output in form of plot and ascii file
                 
     # apply 2d Gauss filter kernel in Fourier space via FFT
-    uFiltered=np.fft.ifft2(np.fft.fft2(u)*g2d)
+    uFiltered = np.fft.ifft2(np.fft.fft2(u)*g2d)
     
     return uFiltered.real
 
+
+
 def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
-    # 2d Gauss filter applied to a 3d data set defined in a cylindrical co-ordinate frame work
-    # (r, th, z). Wrapper function, which simply calls the function gauss2dThZ() multiple times
-    # (in parallel) for every wall normal loaction (r).
+    # 2d Gauss filter applied to a 3d data set defined in a cylindrical
+    # co-ordinate frame work (r, th, z). Wrapper function, which simply calls
+    # the function gauss2dThZ() multiple times (in parallel) for every wall
+    # normal loaction (r).
     # Input parameters:
     # u:         2d scalar field, e.g. one velocity component
     # lambdaTh:  filter width in theta direction, arc length in unit length
@@ -147,8 +154,9 @@ def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
     # r:         1d radial (r) grid vector in unit length
     # th:        1d azimuthal (th) grid vector in unit radian
     # z:         1d axial (z) grid vector in unit length
-    # Returns:
-    # uFiltered: 3d scalar field, which is 2d-filtered in theta and z direction for every radial location (r)
+    # Output parameters:
+    # uFiltered: 3d scalar field, which is 2d-filtered in theta and z direction
+    #            for every radial location (r)
 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -166,9 +174,12 @@ def gauss2d(u, lambdaTh, lambdaZ, r, th, z):
 
     return uFiltered
 
+
+
 def box2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
-    # 2d box filter applied to a 2d data slice in a wall-parallel th-z-plane defined in a cylindrical
-    # co-ordinate frame work (r,th,z). Applied in Fourier space via FFT and convolution theorem.
+    # 2d box (or top hat) filter applied to a 2d data slice in a wall-parallel
+    # th-z-plane defined in a cylindrical co-ordinate frame work (r,th,z).
+    # Applied in Fourier space via FFT and convolution theorem.
     # Input parameters:
     # u:         2d scalar field, e.g. one velocity component
     # rPos:      radial location (r) of wall-parallel data slice
@@ -176,44 +187,51 @@ def box2dThZ(u, rPos, lambdaTh, lambdaZ, th, z):
     # lambdaZ:   filter width in z direction in unit length
     # th:        1d azimuthal (th) grid vector in unit radian
     # z:         1d axial (z) grid vector in unit length
-    # rect:      switch for rectangular or elliptical (circular) kernel formulation
-    # Returns:
+    # rect:      switch for rectangular or elliptical kernel formulation
+    # Output parameters:
     # uFiltered: 2d scalar field, which is 2d-filtered in theta and z direction
 
-    # set-up sample spacing in unit length (pipe radii R, gap width d, etc)
-    deltaTh = (th[1]-th[0])*rPos # equidistant but r dependent
-    deltaZ  = ( z[1]- z[0])      # equidistant
+    # set-up sample spacing in unit length (pipe radius R)
+    deltaTh = (th[1]-th[0])*rPos   # equidistant but r dependent
+    deltaZ  = ( z[1]- z[0])        # equidistant
     
     # set-up wavenumber vector in unit cycle per length (1/R)
-    kTh = np.fft.fftfreq(len(th), d=deltaTh) # homogeneous azimuthal (th) direction
-    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)  # homogeneous axial (z) direction
+    kTh = np.fft.fftfreq(len(th), d=deltaTh)   # homogeneous azimuthal (th) direction
+    kZ  = np.fft.fftfreq(len(z),  d=deltaZ)    # homogeneous axial (z) direction
     
     # set-up wavenumber vector in unit radian per length (2pi/R)
-    kappaTh = 2.0*np.pi*kTh # homogeneous azimuthal (th) direction
-    kappaZ  = 2.0*np.pi*kZ  # homogeneous axial (z) direction
+    kappaTh = 2.0*np.pi*kTh   # homogeneous azimuthal (th) direction
+    kappaZ  = 2.0*np.pi*kZ    # homogeneous axial (z) direction
     
-    # construct 2d filter kernel
-    gTh = np.sinc(kTh*lambdaTh) # Box sinc kernel in theta direction
-    gZ  = np.sinc(kZ *lambdaZ)  # Box sinc kernel in axial direction
-    g2d = np.outer(gTh, gZ)     # 2d filter kernel in theta-z plane
+    # construct 2d filter kernel in Fourier space
+    gTh = np.sinc(kTh*lambdaTh)   # 1d azimuthal (th) kernel, Box -> sinc
+    gZ  = np.sinc(kZ *lambdaZ)    # 1d axial (z) kernel, Box -> sinc
+    g2d = np.outer(gTh, gZ)       # 2d filter kernel in theta-z plane
+                                  # Note that sine cardinal is implemented in normalised form in numpy
+                                  # see https://numpy.org/devdocs/reference/generated/numpy.sinc.html
 
     # apply 2d filter kernel in Fourier space via FFT
-    uFiltered=np.fft.ifft2(np.fft.fft2(u)*g2d)
+    uFiltered = np.fft.ifft2(np.fft.fft2(u)*g2d)
 
     return uFiltered.real
 
 
+
 def box2d(u, lambdaTh, lambdaZ, r, th, z):
-# 2d Box filter for 3d data in a cylindrical
-# co-ordinate frame work (r,th,z). Applied in Fourier space via FFT.
-# Parameters:
-# u: 3d scalar field
-# lambdaTh: filter width in theta direction, arc length in unit distance
-# lambdaZ: filter width in z direction
-# r: 1d grid vector, radial (wall-normal) co-ordinate in unit length
-# th: 1d grid vector, azimuthal co-ordinate in unit radian
-# z: 1d grid vector, axial co-ordinate in unit length
-# Returns: A 3d scalar field which is 2d-filtered in theta and z direction only
+    # 2d Box filter applied to a 3d data set defined in a cylindrical
+    # co-ordinate frame work (r, th, z). Wrapper function, which simply calls
+    # the function box2dThZ() multiple times (in parallel) for every wall normal
+    # loaction (r).
+    # Input parameters:
+    # u:         2d scalar field, e.g. one velocity component
+    # lambdaTh:  filter width in theta direction, arc length in unit length
+    # lambdaZ:   filter width in z direction in unit length
+    # r:         1d radial (r) grid vector in unit length
+    # th:        1d azimuthal (th) grid vector in unit radian
+    # z:         1d axial (z) grid vector in unit length
+    # Output parameters:
+    # uFiltered: 3d scalar field, which is 2d-filtered in theta and z direction
+    #            for every radial location (r)
 
     # construct output array of correct shape filled with zeros
     uFiltered = np.zeros((len(r), len(th), len(z)))
@@ -227,7 +245,6 @@ def box2d(u, lambdaTh, lambdaZ, r, th, z):
 
     # simple serial version
     # for i in range(len(r)):
-    #uFiltered[i] = box2dThZ(u[i,:,:], r[i], lambdaTh, lambdaZ, th, z)
+    # uFiltered[i] = box2dThZ(u[i,:,:], r[i], lambdaTh, lambdaZ, th, z)
 
     return uFiltered
-
