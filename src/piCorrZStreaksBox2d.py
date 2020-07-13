@@ -9,18 +9,20 @@
 #           filter operation in wall-parallel planes for each radial location.
 #           Additionally, compute the vorticity vector field (omega) for each
 #           snapshot. Finally, compute one-dimensional two-point correlations
-#           in axial (z) direction; auto-correlations for the original (u'_z)
-#           and filtered (u'_zF) streamwise velocity component (representing
-#           streaks), for the axial vorticity component (representing streamwise
-#           alligned vortices) and for the energy flux, cross-correlations for
-#           all of these quantities with the energy flux. Do statistics over all
-#           azimuthal (theta) locations and all snapshots, and write the
-#           resulting 1d correlations to a single ascii file. Optionally, plot
-#           the results interactively or as pdf figure file.
+#           in axial (z) direction; auto-correlations for the original
+#           (u'_z) and the filtered (u'_zF) streamwise velocity component
+#           (representing streaks), for the axial vorticity component (omega_z,
+#           representing streamwise alligned vortices) and for the energy flux;
+#           cross-correlations for all of these quantities with the energy flux.
+#           Additionally, separate forward (PiP) from backward (PiP) fluxes and
+#           high-speed from low-speed streaks to compute cross-correlations.
+#           Do statistics over all azimuthal (th) locations and all snapshots,
+#           and write the resulting 1d correlations to a single ascii file.
+#           Optionally, plot the results interactively or as pdf figure file.
 # Usage:    python piCorrZStreaksBox2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
-# Modified: 23rd December 2019
+# Modified: 13th July 2020
 
 import sys
 import timeit
@@ -91,6 +93,8 @@ ccOmegaZPip = np.zeros(nz) # initialise cross-correlation for omega_z and eFlux 
 ccUzPin     = np.zeros(nz) # initialise cross-correlation for u'_z and eFlux < 0 bwd only
 ccUzFPin    = np.zeros(nz) # initialise cross-correlation for u'_z filtered and eFlux < 0 bwd only
 ccOmegaZPin = np.zeros(nz) # initialise cross-correlation for omega_z and eFlux < 0 bwd only
+ccUzpPi     = np.zeros(nz) # initialise cross-correlation for u'_z > 0 and eFlux, high-speed only
+ccUznPi     = np.zeros(nz) # initialise cross-correlation for u'_z < 0 and eFlux, low-speed only
 nt          = 0            # reset ensemble counter
 
 # first and second statistical moments for normalisation
@@ -98,6 +102,10 @@ uz1     = 0 # streaks
 uz2     = 0
 uzF1    = 0 # filtered streaks
 uzF2    = 0
+uzp1    = 0 # high-speed streaks only (Positive)
+uzp2    = 0
+uzn1    = 0 # low-speed streaks only (Negative)
+uzn2    = 0
 omegaZ1 = 0 # streamwise vortices
 omegaZ2 = 0
 pi1     = 0 # total flux
@@ -174,9 +182,13 @@ for iFile in iFiles:
         omegaZ1d = omegaZ[k, l, :]
         pi1d     =     pi[k, l, :]
 
-        # isolate forward/backward flux events in the 1d velocity subset
-        pip1d = np.where(pi1d > 0, pi1d, 0) # only positive, zero elsewhere
-        pin1d = np.where(pi1d < 0, pi1d, 0) # only negative, zero elsewhere
+        # isolate high-speed/low-speed streaks in the 1d velocity subset
+        uzp1d = np.where(uz1d > 0, uz1d, 0) # only high-speed, zero elsewhere
+        uzn1d = np.where(uz1d < 0, uz1d, 0) # only low-speed, zero elsewhere
+
+        # isolate forward/backward flux events in the 1d flux subset
+        pip1d = np.where(pi1d > 0, pi1d, 0) # only forward, zero elsewhere
+        pin1d = np.where(pi1d < 0, pi1d, 0) # only backward, zero elsewhere
 
         # compute correlations and sum up azimuthal (spatial) and temporal (ensemble) statistics
         import crossCorrelation as c 
@@ -193,12 +205,18 @@ for iFile in iFiles:
         ccUzPin     = ccUzPin     + c.corr1d(uz1d,     pin1d)    # cross-correlations backward flux
         ccUzFPin    = ccUzFPin    + c.corr1d(uzF1d,    pin1d)
         ccOmegaZPin = ccOmegaZPin + c.corr1d(omegaZ1d, pin1d)
+        ccUzpPi     = ccUzpPi     + c.corr1d(uzp1d,    pi1d)     # cross-correlations high-speed streaks
+        ccUznPi     = ccUznPi     + c.corr1d(uzn1d,    pi1d)     # cross-correlations low-speed streaks
 
         # sum up first and second statistical moments in time and (homogeneous) theta z direction for normalisation
         uz1     = uz1     + np.sum(uz1d)
         uz2     = uz2     + np.sum(uz1d**2)
         uzF1    = uzF1    + np.sum(uzF1d)
         uzF2    = uzF2    + np.sum(uzF1d**2)
+        uzp1    = uzp1    + np.sum(uzp1d)
+        uzp2    = uzp2    + np.sum(uzp1d**2)
+        uzn1    = uzn1    + np.sum(uzn1d)
+        uzn2    = uzn2    + np.sum(uzn1d**2)
         omegaZ1 = omegaZ1 + np.sum(omegaZ1d)
         omegaZ2 = omegaZ2 + np.sum(omegaZ1d**2)
         pi1     = pi1     + np.sum(pi1d)
@@ -227,6 +245,8 @@ ccOmegaZPip = ccOmegaZPip / (nt*nth)
 ccUzPin     = ccUzPin     / (nt*nth)
 ccUzFPin    = ccUzFPin    / (nt*nth)
 ccOmegaZPin = ccOmegaZPin / (nt*nth)
+ccUzpPi     = ccUzpPi     / (nt*nth)
+ccUznPi     = ccUznPi     / (nt*nth)
 
 # divide normalisation statistics by total number of spatio-temporal samples
 uz1     = uz1     / (nth*nz*nt)
@@ -241,10 +261,16 @@ pip1    = pip1    / (nth*nz*nt)
 pip2    = pip2    / (nth*nz*nt)
 pin1    = pin1    / (nth*nz*nt)
 pin2    = pin2    / (nth*nz*nt)
+uzp1    = uzp1    / (nth*nz*nt)
+uzp2    = uzp2    / (nth*nz*nt)
+uzn1    = uzn1    / (nth*nz*nt)
+uzn2    = uzn2    / (nth*nz*nt)
 
 # compute RMS for normalisation
 uzRms     = np.sqrt(uz2 - uz1**2)
 uzFRms    = np.sqrt(uzF2 - uzF1**2)
+uzpRms    = np.sqrt(uzp2 - uzp1**2)
+uznRms    = np.sqrt(uzn2 - uzn1**2)
 omegaZRms = np.sqrt(omegaZ2 - omegaZ1**2)
 piRms     = np.sqrt(pi2 - pi1**2)
 pipRms    = np.sqrt(pip2 - pip1**2)
@@ -266,6 +292,8 @@ ccOmegaZPip = ccOmegaZPip / (omegaZRms * pipRms)
 ccUzPin     = ccUzPin     / (uzRms     * pinRms)
 ccUzFPin    = ccUzFPin    / (uzFRms    * pinRms)
 ccOmegaZPin = ccOmegaZPin / (omegaZRms * pinRms)
+ccUzpPi     = ccUzpPi     / (uzpRms    * piRms)
+ccUznPi     = ccUznPi     / (uznRms    * piRms)
 
 print('Total elapsed wall-clock time:', '{:3.1f}'.format(timeit.default_timer()-t0), 'seconds')
 
@@ -278,7 +306,9 @@ f = open(fnam, 'w')
 f.write("# One-dimensional two-point correlations in axial (z) direction\n")
 f.write("# At wall-normal location r = %f -> y+ = %f\n" % (r[k], (1.0-r[k])*ReTau))
 f.write("# For the following flow variables:\n")
-f.write("# + Streamwise velocity u'_z (High-speed and low-speed streaks)\n")
+f.write("# + Streamwise velocity u'_z (High-speed and low-speed streaks together)\n")
+f.write("# + Positive streamwise velocity u'_zP (High-speed streaks only)\n")
+f.write("# + Negative streamwise velocity u'_zN (Low-speed streaks only)\n")
 f.write("# + Filtered streamwise velocity u'_zF (Smoothed streaks)\n")
 f.write("# + Axial vorticity component omega_z (Streamwise aligned vortices)\n")
 f.write("# + Inter-scale energy flux Pi (full, only positive, only negative) across scale lambda\n")
@@ -289,23 +319,25 @@ f.write("# Python post-processing on data set nsPipe/pipe0002 generated in a DNS
 f.write("# Temporal (ensemble) averaging over %d sample(s)\n" % (nt))
 f.write("# First snapshot: %08d\n" % (iFirst))
 f.write("# Last snapshot:  %08d\n" % (iLast))
-f.write("# Additional spatial averaging in azimuthal (theta) direction over %d points\n" % (nth))
+f.write("# Additional spatial averaging in azimuthal (th) direction over %d points\n" % (nth))
 f.write("# 01st column: Axial separation DeltaZ in units of pipe radii (R), nz = %d points\n" % nz)
-f.write("# 02nd column: Auto-correlation  u'_z    with u'_z\n")
-f.write("# 03rd column: Auto-correlation  u'_zF   with u'_zF\n")
-f.write("# 04th column: Auto-correlation  omega_z with omega_z\n")
-f.write("# 05th column: Auto-correlation  Pi      with Pi\n")
-f.write("# 06th column: Cross-correlation u'_z    with Pi\n")
-f.write("# 07th column: Cross-correlation u'_zF   with Pi\n")
-f.write("# 08th column: Cross-correlation omega_z with Pi\n")
-f.write("# 09th column: Cross-correlation u'_z    with Pi > 0\n")
-f.write("# 10th column: Cross-correlation u'_zF   with Pi > 0\n")
-f.write("# 11th column: Cross-correlation omega_z with Pi > 0\n")
-f.write("# 12th column: Cross-correlation u'_z    with Pi < 0\n")
-f.write("# 13th column: Cross-correlation u'_zF   with Pi < 0\n")
-f.write("# 14th column: Cross-correlation omega_z with Pi < 0\n")
+f.write("# 02nd column: Auto-correlation  u'_z     with u'_z\n")
+f.write("# 03rd column: Auto-correlation  u'_zF    with u'_zF\n")
+f.write("# 04th column: Auto-correlation  omega_z  with omega_z\n")
+f.write("# 05th column: Auto-correlation  Pi       with Pi\n")
+f.write("# 06th column: Cross-correlation u'_z     with Pi\n")
+f.write("# 07th column: Cross-correlation u'_zF    with Pi\n")
+f.write("# 08th column: Cross-correlation omega_z  with Pi\n")
+f.write("# 09th column: Cross-correlation u'_z     with Pi > 0\n")
+f.write("# 10th column: Cross-correlation u'_zF    with Pi > 0\n")
+f.write("# 11th column: Cross-correlation omega_z  with Pi > 0\n")
+f.write("# 12th column: Cross-correlation u'_z     with Pi < 0\n")
+f.write("# 13th column: Cross-correlation u'_zF    with Pi < 0\n")
+f.write("# 14th column: Cross-correlation omega_z  with Pi < 0\n")
+f.write("# 15th column: Cross-correlation u'_z > 0 with Pi\n")
+f.write("# 16th column: Cross-correlation u'_z < 0 with Pi\n")
 for i in range(nz):
-  f.write("%23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e\n" % (DeltaZ[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i]))
+    f.write(('{:24.16e}'*16+'\n').format(DeltaZ[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i], ccUzpPi[i], ccUznPi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
 
@@ -416,6 +448,6 @@ else:
  fnam = str.replace(fnam, '.dat', '.pdf')
  plt.savefig(fnam)
  print('Written file', fnam)
-fig.clf()
+fig.clf('all')
 
 print('Done!')
