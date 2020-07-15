@@ -10,7 +10,7 @@
 # Usage:    python plotPiStreaksComapre.py 
 # Authors:  Daniel Feldmann, Mohammad Umair
 # Date:     28th March 2019
-# Modified: 30th September 2019
+# Modified: 15th July 2020
 
 import timeit
 import numpy as np
@@ -266,6 +266,14 @@ ca2.set_xticks([-amqs, +amqs])
 ca1.set_xticklabels([-6, -3, r"$u^{\prime}_{z}$ in $u_{\tau}$", 3, 6])
 ca2.set_xticklabels([r"$Q_3$", r"$Q_1$"])
 
+
+# optional rectangle to highlight special regions of strong differences
+from matplotlib.patches import Rectangle
+ax1.add_patch(Rectangle((1596.0,  35.0), 164.0, 137.0, fill=False, color=Grey, alpha=1, linewidth=1.0, clip_on=False, zorder=100))
+ax1.add_patch(Rectangle(( 865.0, 403.0), 161.0, 114.0, fill=False, color=Grey, alpha=1, linewidth=1.0, clip_on=False, zorder=100))
+ax3.add_patch(Rectangle((1596.0,  35.0), 164.0, 137.0, fill=False, color=Grey, alpha=1, linewidth=1.0, clip_on=False, zorder=100))
+ax3.add_patch(Rectangle(( 865.0, 403.0), 161.0, 114.0, fill=False, color=Grey, alpha=1, linewidth=1.0, clip_on=False, zorder=100))
+
 # plot mode interactive or pdf
 if plot != 2:
  #plt.tight_layout()
@@ -276,4 +284,4 @@ else:
  fnam = str.replace(fnam, 'piFieldGauss2d', 'plotPiStreaksCompare')
  plt.savefig(fnam)
  print('Written file', fnam)
-fig.clf()
+fig.clf('all')
