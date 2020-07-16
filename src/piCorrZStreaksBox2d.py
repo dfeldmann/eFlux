@@ -12,17 +12,18 @@
 #           in axial (z) direction; auto-correlations for the original
 #           (u'_z) and the filtered (u'_zF) streamwise velocity component
 #           (representing streaks), for the axial vorticity component (omega_z,
-#           representing streamwise alligned vortices) and for the energy flux;
+#           representing streamwise alligned vortices) for the wall-normal velocity field and for the energy flux;
 #           cross-correlations for all of these quantities with the energy flux.
 #           Additionally, separate forward (PiP) from backward (PiP) fluxes and
-#           high-speed from low-speed streaks to compute cross-correlations.
+#           high-speed (u'_zP) from low-speed (u'_zN) streaks to compute
+#           cross-correlations.
 #           Do statistics over all azimuthal (th) locations and all snapshots,
 #           and write the resulting 1d correlations to a single ascii file.
 #           Optionally, plot the results interactively or as pdf figure file.
 # Usage:    python piCorrZStreaksBox2d.py
 # Authors:  Daniel Feldmann, Mohammad Umair, Jan Chen
 # Date:     28th March 2019
-# Modified: 13th July 2020
+# Modified: 17th July 2020
 
 import sys
 import timeit
@@ -80,10 +81,12 @@ from joblib import Parallel, delayed
 print("Running on", multiprocessing.cpu_count(), "cores")
 
 # prepare arrays for statistics
+acUr        = np.zeros(nz) # initialise auto-correlation for u_r
 acUz        = np.zeros(nz) # initialise auto-correlation for u'_z
 acUzF       = np.zeros(nz) # initialise auto-correlation for u'_z Box filtered
 acOmegaZ    = np.zeros(nz) # initialise auto-correlation for omega_z
 acPi        = np.zeros(nz) # initialise auto-correlation for Pi
+ccUrPi      = np.zeros(nz) # initialise cross-correlation for u_r and eFlux
 ccUzPi      = np.zeros(nz) # initialise cross-correlation for u'_z and eFlux
 ccUzFPi     = np.zeros(nz) # initialise cross-correlation for u'_z filtered and eFlux
 ccOmegaZPi  = np.zeros(nz) # initialise cross-correlation for omega_z nd eFlux
@@ -98,6 +101,8 @@ ccUznPi     = np.zeros(nz) # initialise cross-correlation for u'_z < 0 and eFlux
 nt          = 0            # reset ensemble counter
 
 # first and second statistical moments for normalisation
+ur1     = 0 # wall-normal transport
+ur2     = 0
 uz1     = 0 # streaks
 uz2     = 0
 uzF1    = 0 # filtered streaks
@@ -177,10 +182,15 @@ for iFile in iFiles:
     for l in range(nth):
 
         # extract 1d data sub-sets along axial line at constant wall distance
-        uz1d     =    u_z[k, l, :] # data structure is (r, theta, z)
+        ur1d     =    u_r[k, l, :] # data structure is (r, theta, z)
+        uz1d     =    u_z[k, l, :]
         uzF1d    =   u_zF[k, l, :]
         omegaZ1d = omegaZ[k, l, :]
         pi1d     =     pi[k, l, :]
+
+        # isolate inward/outward wall-normal fluid transport in the 1d velocity subset
+        urp1d = np.where(ur1d > 0, ur1d, 0) # only inward, zero elsewhere
+        urn1d = np.where(ur1d < 0, ur1d, 0) # only outward, zero elsewhere
 
         # isolate high-speed/low-speed streaks in the 1d velocity subset
         uzp1d = np.where(uz1d > 0, uz1d, 0) # only high-speed, zero elsewhere
@@ -196,7 +206,8 @@ for iFile in iFiles:
         acUzF       = acUzF       + c.corr1d(uzF1d,    uzF1d)
         acOmegaZ    = acOmegaZ    + c.corr1d(omegaZ1d, omegaZ1d)
         acPi        = acPi        + c.corr1d(pi1d,     pi1d)
-        ccUzPi      = ccUzPi      + c.corr1d(uz1d,     pi1d)     # cross-correlations full flux
+        ccUrPi      = ccUrPi      + c.corr1d(ur1d,     pi1d)     # cross-correlations full flux
+        ccUzPi      = ccUzPi      + c.corr1d(uz1d,     pi1d)
         ccUzFPi     = ccUzFPi     + c.corr1d(uzF1d,    pi1d)
         ccOmegaZPi  = ccOmegaZPi  + c.corr1d(omegaZ1d, pi1d)
         ccUzPip     = ccUzPip     + c.corr1d(uz1d,     pip1d)    # cross-correlations forward flux
@@ -209,6 +220,8 @@ for iFile in iFiles:
         ccUznPi     = ccUznPi     + c.corr1d(uzn1d,    pi1d)     # cross-correlations low-speed streaks
 
         # sum up first and second statistical moments in time and (homogeneous) theta z direction for normalisation
+        ur1     = ur1     + np.sum(ur1d)
+        ur2     = ur2     + np.sum(ur1d**2)
         uz1     = uz1     + np.sum(uz1d)
         uz2     = uz2     + np.sum(uz1d**2)
         uzF1    = uzF1    + np.sum(uzF1d)
@@ -232,10 +245,12 @@ for iFile in iFiles:
     nt = nt + 1
 
 # divide correlation statistics by total number of spatio-temporal samples
+acUr        = acUr        / (nt*nth)
 acUz        = acUz        / (nt*nth)
 acUzF       = acUzF       / (nt*nth)
 acOmegaZ    = acOmegaZ    / (nt*nth)
 acPi        = acPi        / (nt*nth)
+ccUrPi      = ccUrPi      / (nt*nth)
 ccUzPi      = ccUzPi      / (nt*nth)
 ccUzFPi     = ccUzFPi     / (nt*nth)
 ccOmegaZPi  = ccOmegaZPi  / (nt*nth)
@@ -249,6 +264,8 @@ ccUzpPi     = ccUzpPi     / (nt*nth)
 ccUznPi     = ccUznPi     / (nt*nth)
 
 # divide normalisation statistics by total number of spatio-temporal samples
+ur1     = ur1     / (nth*nz*nt)
+ur2     = ur2     / (nth*nz*nt)
 uz1     = uz1     / (nth*nz*nt)
 uz2     = uz2     / (nth*nz*nt)
 uzF1    = uzF1    / (nth*nz*nt)
@@ -267,6 +284,7 @@ uzn1    = uzn1    / (nth*nz*nt)
 uzn2    = uzn2    / (nth*nz*nt)
 
 # compute RMS for normalisation
+urRms     = np.sqrt(ur2 - ur1**2)
 uzRms     = np.sqrt(uz2 - uz1**2)
 uzFRms    = np.sqrt(uzF2 - uzF1**2)
 uzpRms    = np.sqrt(uzp2 - uzp1**2)
@@ -275,10 +293,11 @@ omegaZRms = np.sqrt(omegaZ2 - omegaZ1**2)
 piRms     = np.sqrt(pi2 - pi1**2)
 pipRms    = np.sqrt(pip2 - pip1**2)
 pinRms    = np.sqrt(pin2 - pin1**2)
-print('uzMean', uz1)
-print('uzRms', uzRms)
+print('urMean =', ur1, 'urRms =', urRms)
+print('uzMean =', uz1, 'uzRms =', uzRms)
 
 # normalise correlations with local RMS 
+acUr        = acUr        / (urRms     * urRms)
 acUz        = acUz        / (uzRms     * uzRms)
 acUzF       = acUzF       / (uzFRms    * uzFRms)
 acOmegaZ    = acOmegaZ    / (omegaZRms * omegaZRms)
@@ -321,23 +340,25 @@ f.write("# First snapshot: %08d\n" % (iFirst))
 f.write("# Last snapshot:  %08d\n" % (iLast))
 f.write("# Additional spatial averaging in azimuthal (th) direction over %d points\n" % (nth))
 f.write("# 01st column: Axial separation DeltaZ in units of pipe radii (R), nz = %d points\n" % nz)
-f.write("# 02nd column: Auto-correlation  u'_z     with u'_z\n")
-f.write("# 03rd column: Auto-correlation  u'_zF    with u'_zF\n")
-f.write("# 04th column: Auto-correlation  omega_z  with omega_z\n")
-f.write("# 05th column: Auto-correlation  Pi       with Pi\n")
-f.write("# 06th column: Cross-correlation u'_z     with Pi\n")
-f.write("# 07th column: Cross-correlation u'_zF    with Pi\n")
-f.write("# 08th column: Cross-correlation omega_z  with Pi\n")
-f.write("# 09th column: Cross-correlation u'_z     with Pi > 0\n")
-f.write("# 10th column: Cross-correlation u'_zF    with Pi > 0\n")
-f.write("# 11th column: Cross-correlation omega_z  with Pi > 0\n")
-f.write("# 12th column: Cross-correlation u'_z     with Pi < 0\n")
-f.write("# 13th column: Cross-correlation u'_zF    with Pi < 0\n")
-f.write("# 14th column: Cross-correlation omega_z  with Pi < 0\n")
-f.write("# 15th column: Cross-correlation u'_z > 0 with Pi\n")
-f.write("# 16th column: Cross-correlation u'_z < 0 with Pi\n")
+f.write("# 02nd column: Auto-correlation  u_r      with u_r\n")
+f.write("# 03rd column: Auto-correlation  u'_z     with u'_z\n")
+f.write("# 04th column: Auto-correlation  u'_zF    with u'_zF\n")
+f.write("# 05th column: Auto-correlation  omega_z  with omega_z\n")
+f.write("# 06th column: Auto-correlation  Pi       with Pi\n")
+f.write("# 07th column: Cross-correlation u_r      with Pi\n")
+f.write("# 08th column: Cross-correlation u'_z     with Pi\n")
+f.write("# 09th column: Cross-correlation u'_zF    with Pi\n")
+f.write("# 10th column: Cross-correlation omega_z  with Pi\n")
+f.write("# 11th column: Cross-correlation u'_z     with Pi > 0\n")
+f.write("# 12th column: Cross-correlation u'_zF    with Pi > 0\n")
+f.write("# 13th column: Cross-correlation omega_z  with Pi > 0\n")
+f.write("# 14th column: Cross-correlation u'_z     with Pi < 0\n")
+f.write("# 15th column: Cross-correlation u'_zF    with Pi < 0\n")
+f.write("# 16th column: Cross-correlation omega_z  with Pi < 0\n")
+f.write("# 17th column: Cross-correlation u'_z > 0 with Pi\n")
+f.write("# 18th column: Cross-correlation u'_z < 0 with Pi\n")
 for i in range(nz):
-    f.write(('{:24.16e}'*16+'\n').format(DeltaZ[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i], ccUzpPi[i], ccUznPi[i]))
+    f.write(('{:24.16e}'*18+'\n').format(DeltaZ[i], acUr[i], acUz[i], acUzF[i], acOmegaZ[i], acPi[i], ccUrPi[i], ccUzPi[i], ccUzFPi[i], ccOmegaZPi[i], ccUzPip[i], ccUzFPip[i], ccOmegaZPip[i], ccUzPin[i], ccUzFPin[i], ccOmegaZPin[i], ccUzpPi[i], ccUznPi[i]))
 f.close()
 print('Written 1d correlations to file', fnam)
 
